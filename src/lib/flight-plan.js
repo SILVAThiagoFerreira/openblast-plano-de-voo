@@ -38,11 +38,11 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
   const perimeterM = polygonPerimeter(bufferedRing);
 
   const description = [
-    '<p>Poligonal gerada a partir de DXF com buffer de 7 m.</p>',
+    '<p>Poligonal gerada a partir de DXF com recuo de 7 m.</p>',
     `<p><strong>Arquivo:</strong> ${sourceFileName}</p>`,
     `<p><strong>CRS:</strong> ${projectionLabel(utmZone)}</p>`,
     `<p><strong>Unidade do DXF:</strong> ${parsed.unitInfo.label}</p>`,
-    `<p><strong>Buffer:</strong> ${formatMeters(bufferMeters)}</p>`
+    `<p><strong>Recuo:</strong> ${formatMeters(bufferMeters)}</p>`
   ].join('');
 
   const kml = buildKmlDocument({
@@ -54,8 +54,8 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
       entidades: parsed.entityCount,
       pontos: parsed.points.length,
       area_original: formatAreaSmart(sourceAreaM2),
-      area_buffer: formatAreaSmart(bufferedAreaM2),
-      perimetro_buffer: formatMeters(perimeterM),
+      area_recuo: formatAreaSmart(bufferedAreaM2),
+      perimetro_recuo: formatMeters(perimeterM),
       zone: projectionLabel(utmZone)
     }
   });

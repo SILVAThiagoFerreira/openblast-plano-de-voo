@@ -159,7 +159,7 @@ function App() {
         { label: 'Entidades lidas', value: formatNumber(result.parsed.entityCount, 0) },
         { label: 'Pontos úteis', value: formatNumber(result.parsed.points.length, 0) },
         { label: 'Vértices da borda', value: formatNumber(result.sourceRing.length, 0) },
-        { label: 'Vértices do buffer', value: formatNumber(result.bufferedRing.length, 0) },
+        { label: 'Vértices do recuo', value: formatNumber(result.bufferedRing.length, 0) },
         { label: 'Área original', value: formatAreaSmart(result.stats.sourceAreaM2) },
         { label: 'Área final', value: formatAreaSmart(result.stats.bufferedAreaM2) },
         { label: 'Perímetro final', value: formatMeters(result.stats.perimeterM) },
@@ -185,16 +185,12 @@ function App() {
         <div className="brand-block">
           <img className="brand-logo" src={enaexLogoUrl} alt="Enaex Brasil" />
           <div>
-            <p className="eyebrow">DXF para Google Earth</p>
+            <p className="eyebrow">DXF para KMZ</p>
             <h1>Plano de Voo</h1>
           </div>
         </div>
 
         <div className="hero-copy">
-          <p>
-            Importe um DXF, gere a poligonal no padrão do Google Earth, aplique o recuo de 7 m e exporte um KMZ pronto para o plano de voo.
-          </p>
-
           <div className="status-pill" aria-live="polite">
             <span className={`status-dot ${error ? 'status-dot-error' : result ? 'status-dot-ok' : 'status-dot-wait'}`} />
             <span>{error || status}</span>
@@ -208,7 +204,7 @@ function App() {
             <PanelHeader
               eyebrow="Entrada"
               title="Importe o DXF"
-              description="Arraste e solte o arquivo ou use o seletor. O sistema lê o desenho, extrai o contorno e prepara o buffer de 7 m."
+              description="Arraste e solte o arquivo ou use o seletor. O sistema lê o desenho, extrai o contorno e prepara o recuo."
             />
 
             <div
@@ -304,7 +300,7 @@ function App() {
               </label>
 
               <label className="field field-wide">
-                <span>Buffer lateral</span>
+                <span>Recuo lateral</span>
                 <input
                   type="number"
                   min="0"
@@ -356,7 +352,7 @@ function App() {
             </div>
 
             <div className="legend-row">
-              <span><i className="legend-swatch legend-fill" /> Buffer</span>
+              <span><i className="legend-swatch legend-fill" /> Recuo</span>
               <span><i className="legend-swatch legend-line" /> Contorno original</span>
             </div>
           </article>
