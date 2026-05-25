@@ -313,7 +313,6 @@ function App() {
 
             <div className="hint-box">
               <strong>{projectionLabel(utmZone)}</strong>
-              <p>O recuo padrão é 7 m, conforme solicitado.</p>
             </div>
           </article>
         </section>
