@@ -203,7 +203,7 @@ function App() {
           <article className="panel card-upload">
             <PanelHeader
               eyebrow="Entrada"
-              title="Importe o DXF"
+              title="Importe o DXF:"
               description="Arraste e solte o arquivo ou use o seletor. O sistema lê o desenho, extrai o contorno e prepara o recuo."
             />
 
@@ -275,7 +275,7 @@ function App() {
           <article className="panel card-config">
             <PanelHeader
               eyebrow="Configuração"
-              title="Parâmetros de exportação"
+              title="Parâmetros de Exportação:"
               description="A geometria CAD normalmente não traz CRS explícito. Ajuste a zona UTM se a poligonal aparecer deslocada no Google Earth."
             />
 
@@ -321,7 +321,7 @@ function App() {
           <article className="panel card-preview">
             <PanelHeader
               eyebrow="Preview"
-              title="Poligonal gerada"
+              title="Poligonal Gerada:"
               description="Linha clara = contorno lido do DXF. Área sólida = poligonal com o recuo aplicado."
             />
 
@@ -359,7 +359,7 @@ function App() {
           <article className="panel card-stats">
             <PanelHeader
               eyebrow="Medições"
-              title="Resumo técnico"
+              title="Resumo Técnico:"
               description="Os números abaixo ajudam a conferir se o DXF foi interpretado corretamente antes do download."
             />
 
@@ -384,7 +384,7 @@ function App() {
           <article className="panel card-export">
             <PanelHeader
               eyebrow="Saída"
-              title="Exportar KMZ"
+              title="Exportar KMZ:"
               description="O arquivo sai com o nome padrão PLANO DE VOO - AAAAMMDD, pronto para abrir no Google Earth."
             />
 
