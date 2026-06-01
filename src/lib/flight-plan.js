@@ -67,16 +67,6 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
   const dxf = buildDxfDocument({
     name: flightName,
     ring: dxfMode === 'offset' ? bufferedRing : sourceRing,
-    metadata: {
-      arquivo: sourceFileName,
-      entidades: parsed.entityCount,
-      pontos: parsed.points.length,
-      area_original: formatAreaSmart(sourceAreaM2),
-      area_recuo: formatAreaSmart(bufferedAreaM2),
-      perimetro_recuo: formatMeters(perimeterM),
-      zone: projectionLabel(utmZone),
-      modo: dxfMode === 'offset' ? 'contorno com offset' : 'contorno sem offset'
-    },
     units: 6
   });
 

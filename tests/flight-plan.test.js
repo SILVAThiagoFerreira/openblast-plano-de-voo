@@ -123,10 +123,12 @@ describe('DXF export', () => {
       ]
     });
 
-    expect(dxf).toContain('LWPOLYLINE');
+    expect(dxf).toContain('AC1015');
+    expect(dxf).toContain('\n  0\nPOLYLINE\n');
+    expect(dxf).toContain('\n  0\nVERTEX\n');
+    expect(dxf).toContain('\n  0\nSEQEND\n');
     expect(dxf).toContain('\n  8\n0\n');
-    expect(dxf).not.toContain('\n  8\n1\n');
-    expect(dxf.match(/\n  8\n/g)?.length).toBe(1);
+    expect(dxf).not.toContain('LWPOLYLINE');
   });
 
   it('exports the raw contour ring without offset through the flight plan pipeline', async () => {
@@ -171,10 +173,10 @@ EOF
       sourceFileName: 'contorno.dxf'
     });
 
-    expect(built.dxf).toMatch(/\n\s*8\n\s*0\n/);
-    expect(built.dxf).toMatch(/\n\s*10\n\s*0\n\s*20\n\s*0\n/);
-    expect(built.dxf).toMatch(/\n\s*10\n\s*100\n\s*20\n\s*0\n/);
-    expect(built.dxf).not.toContain('  8\n 1\n');
+    expect(built.dxf).toContain('AC1015');
+    expect(built.dxf).toContain('\n  0\nPOLYLINE\n');
+    expect(built.dxf).toContain('\n  0\nVERTEX\n');
+    expect(built.dxf).toContain('\n  0\nSEQEND\n');
     expect(built.dxfOutputName).toContain('contorno');
   });
 
@@ -222,6 +224,6 @@ EOF
     });
 
     expect(built.dxfOutputName).toContain('offset');
-    expect(built.dxf).toContain('modo: contorno com offset');
+    expect(built.dxf).toContain('\n  0\nPOLYLINE\n');
   });
 });

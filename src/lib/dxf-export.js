@@ -9,10 +9,6 @@ function formatNumber(value) {
   return Number.isInteger(rounded) ? String(rounded) : String(rounded).replace('.', '.');
 }
 
-function escapeText(value) {
-  return String(value ?? '').replaceAll('\r', ' ').replaceAll('\n', ' ');
-}
-
 function buildLayerTable() {
   return [
     '  0',
@@ -39,7 +35,6 @@ function buildLayerTable() {
 export function buildDxfDocument({
   name = 'PLANO DE VOO',
   ring = [],
-  metadata = {},
   units = 6
 } = {}) {
   const points = normalizeRing(ring);
@@ -47,27 +42,39 @@ export function buildDxfDocument({
     throw new Error('DXF export requer ao menos 3 vértices.');
   }
 
-  const closed = points.map(([x, y]) => [x, y]);
+  const vertices = points.map(([x, y]) => [x, y]);
   const entities = [
     '  0',
-    'LWPOLYLINE',
+    'POLYLINE',
     '  8',
     '0',
-    ' 90',
-    String(closed.length),
-    ' 70',
+    ' 66',
     '1',
-    ' 43',
-    '0'
+    ' 70',
+    '1'
   ];
 
-  for (const [x, y] of closed) {
-    entities.push(' 10', formatNumber(x), ' 20', formatNumber(y));
+  for (const [x, y] of vertices) {
+    entities.push(
+      '  0',
+      'VERTEX',
+      '  8',
+      '0',
+      ' 10',
+      formatNumber(x),
+      ' 20',
+      formatNumber(y),
+      ' 30',
+      '0'
+    );
   }
 
-  const metadataComments = Object.entries(metadata)
-    .map(([key, value]) => `999\n${escapeText(`${key}: ${value}`)}`)
-    .join('\n');
+  entities.push(
+    '  0',
+    'SEQEND',
+    '  8',
+    '0'
+  );
 
   return [
     '0',
@@ -95,7 +102,6 @@ export function buildDxfDocument({
     'SECTION',
     '2',
     'ENTITIES',
-    ...(metadataComments ? metadataComments.split('\n') : []),
     ...entities,
     '0',
     'ENDSEC',
