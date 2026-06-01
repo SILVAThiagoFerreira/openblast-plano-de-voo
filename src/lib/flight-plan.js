@@ -64,7 +64,7 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
 
   const dxf = buildDxfDocument({
     name: flightName,
-    ring: bufferedRing,
+    ring: sourceRing,
     metadata: {
       arquivo: sourceFileName,
       entidades: parsed.entityCount,

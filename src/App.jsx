@@ -287,7 +287,7 @@ function App() {
               </div>
               <div>
                 <span>Destino</span>
-                <strong>Google Earth / KMZ</strong>
+                <strong>Google Earth / KMZ / DXF contorno</strong>
               </div>
             </div>
           </article>
@@ -405,14 +405,14 @@ function App() {
             <PanelHeader
               eyebrow="Saída"
               title="Exportar KMZ e DXF:"
-              description="O arquivo sai com o nome padrão PLANO DE VOO - AAAAMMDD, pronto para abrir no Google Earth ou reusar no CAD."
+              description="O KMZ sai com o recuo aplicado e o DXF sai como contorno bruto, em linha única, na layer 0."
             />
 
             <div className="export-row">
               <div>
                 <span>Arquivos finais</span>
                 <strong>{outputName}</strong>
-                <strong>{dxfOutputName}</strong>
+                <strong>{dxfOutputName} (contorno)</strong>
               </div>
 
               <div className="export-actions">
