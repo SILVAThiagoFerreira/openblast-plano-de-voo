@@ -23,7 +23,8 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
     bufferMeters = 7,
     utmZone = 24,
     flightDate = new Date(),
-    sourceFileName = 'DXF'
+    sourceFileName = 'DXF',
+    dxfMode = 'contour'
   } = options;
 
   const parsed = parseDxfText(text);
@@ -32,7 +33,8 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
   const projectedRing = projectRingToWgs84(bufferedRing, utmZone);
 
   const outputName = `${formatOutputName(flightDate)}.kmz`;
-  const dxfOutputName = `${formatOutputName(flightDate)}.dxf`;
+  const dxfSuffix = dxfMode === 'offset' ? 'offset' : 'contorno';
+  const dxfOutputName = `${formatOutputName(flightDate)} - ${dxfSuffix}.dxf`;
   const flightName = formatOutputName(flightDate);
 
   const sourceAreaM2 = polygonArea(sourceRing);
@@ -64,7 +66,7 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
 
   const dxf = buildDxfDocument({
     name: flightName,
-    ring: sourceRing,
+    ring: dxfMode === 'offset' ? bufferedRing : sourceRing,
     metadata: {
       arquivo: sourceFileName,
       entidades: parsed.entityCount,
@@ -72,7 +74,8 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
       area_original: formatAreaSmart(sourceAreaM2),
       area_recuo: formatAreaSmart(bufferedAreaM2),
       perimetro_recuo: formatMeters(perimeterM),
-      zone: projectionLabel(utmZone)
+      zone: projectionLabel(utmZone),
+      modo: dxfMode === 'offset' ? 'contorno com offset' : 'contorno sem offset'
     },
     units: 6
   });

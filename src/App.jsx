@@ -22,6 +22,7 @@ function App() {
   const [utmZone, setUtmZone] = useState(defaultZone);
   const [bufferMeters, setBufferMeters] = useState(7);
   const [flightDate, setFlightDate] = useState(todayIso);
+  const [dxfMode, setDxfMode] = useState('contour');
   const [status, setStatus] = useState('Aguardando DXF');
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
@@ -65,7 +66,8 @@ function App() {
           bufferMeters: Number(bufferMeters) || 7,
           utmZone: Number(utmZone) || 24,
           flightDate,
-          sourceFileName: sourceName || 'DXF'
+          sourceFileName: sourceName || 'DXF',
+          dxfMode
         });
 
         if (cancelled) {
@@ -88,7 +90,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [bufferMeters, flightDate, sourceName, sourceText, utmZone]);
+  }, [bufferMeters, dxfMode, flightDate, sourceName, sourceText, utmZone]);
 
   const preview = useMemo(() => {
     if (!result?.sourceRing?.length || !result?.bufferedRing?.length) {
@@ -99,7 +101,7 @@ function App() {
   }, [result]);
 
   const outputName = result?.outputName ?? `${formatOutputName(flightDate)}.kmz`;
-  const dxfOutputName = result?.dxfOutputName ?? `${formatOutputName(flightDate)}.dxf`;
+  const dxfOutputName = result?.dxfOutputName ?? `${formatOutputName(flightDate)} - ${dxfMode === 'offset' ? 'offset' : 'contorno'}.dxf`;
   const canDownload = Boolean(downloadUrl && result?.kmzBlob);
   const canDownloadDxf = Boolean(dxfDownloadUrl && result?.dxfBlob);
 
@@ -329,6 +331,14 @@ function App() {
                   onChange={(event) => setBufferMeters(event.target.value)}
                 />
               </label>
+
+              <label className="field field-wide">
+                <span>DXF de saída</span>
+                <select value={dxfMode} onChange={(event) => setDxfMode(event.target.value)}>
+                  <option value="contour">Contorno sem offset</option>
+                  <option value="offset">Contorno com offset</option>
+                </select>
+              </label>
             </div>
 
             <div className="hint-box">
@@ -412,7 +422,7 @@ function App() {
               <div>
                 <span>Arquivos finais</span>
                 <strong>{outputName}</strong>
-                <strong>{dxfOutputName} (contorno)</strong>
+                <strong>{dxfOutputName}</strong>
               </div>
 
               <div className="export-actions">

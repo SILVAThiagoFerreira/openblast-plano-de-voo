@@ -175,5 +175,53 @@ EOF
     expect(built.dxf).toMatch(/\n\s*10\n\s*0\n\s*20\n\s*0\n/);
     expect(built.dxf).toMatch(/\n\s*10\n\s*100\n\s*20\n\s*0\n/);
     expect(built.dxf).not.toContain('  8\n 1\n');
+    expect(built.dxfOutputName).toContain('contorno');
+  });
+
+  it('exports the offset contour when requested', async () => {
+    const dxf = `0
+SECTION
+2
+ENTITIES
+0
+LWPOLYLINE
+8
+0
+90
+4
+70
+1
+10
+0
+20
+0
+10
+100
+20
+0
+10
+100
+20
+100
+10
+0
+20
+100
+0
+ENDSEC
+0
+EOF
+`;
+
+    const built = await buildFlightPlanFromDxfText(dxf, {
+      bufferMeters: 7,
+      utmZone: 24,
+      flightDate: new Date('2026-05-25T00:00:00Z'),
+      sourceFileName: 'offset.dxf',
+      dxfMode: 'offset'
+    });
+
+    expect(built.dxfOutputName).toContain('offset');
+    expect(built.dxf).toContain('modo: contorno com offset');
   });
 });
