@@ -123,7 +123,7 @@ describe('DXF export', () => {
       ]
     });
 
-    expect(dxf).toContain('AC1015');
+    expect(dxf).toContain('AC1009');
     expect(dxf).toContain('\n  0\nPOLYLINE\n');
     expect(dxf).toContain('\n  0\nVERTEX\n');
     expect(dxf).toContain('\n  0\nSEQEND\n');
@@ -173,7 +173,7 @@ EOF
       sourceFileName: 'contorno.dxf'
     });
 
-    expect(built.dxf).toContain('AC1015');
+    expect(built.dxf).toContain('AC1009');
     expect(built.dxf).toContain('\n  0\nPOLYLINE\n');
     expect(built.dxf).toContain('\n  0\nVERTEX\n');
     expect(built.dxf).toContain('\n  0\nSEQEND\n');

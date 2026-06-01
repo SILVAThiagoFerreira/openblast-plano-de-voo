@@ -9,33 +9,9 @@ function formatNumber(value) {
   return Number.isInteger(rounded) ? String(rounded) : String(rounded).replace('.', '.');
 }
 
-function buildLayerTable() {
-  return [
-    '  0',
-    'TABLE',
-    '  2',
-    'LAYER',
-    ' 70',
-    '1',
-    '  0',
-    'LAYER',
-    '  2',
-    '0',
-    ' 70',
-    '0',
-    ' 62',
-    '7',
-    '  6',
-    'CONTINUOUS',
-    '  0',
-    'ENDTAB'
-  ];
-}
-
 export function buildDxfDocument({
   name = 'PLANO DE VOO',
   ring = [],
-  units = 6
 } = {}) {
   const points = normalizeRing(ring);
   if (points.length < 3) {
@@ -84,18 +60,7 @@ export function buildDxfDocument({
     '9',
     '$ACADVER',
     '1',
-    'AC1015',
-    '9',
-    '$INSUNITS',
-    '70',
-    String(Number.isFinite(units) ? units : 6),
-    '0',
-    'ENDSEC',
-    '0',
-    'SECTION',
-    '2',
-    'TABLES',
-    ...buildLayerTable(),
+    'AC1009',
     '0',
     'ENDSEC',
     '0',

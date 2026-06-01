@@ -66,8 +66,7 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
 
   const dxf = buildDxfDocument({
     name: flightName,
-    ring: dxfMode === 'offset' ? bufferedRing : sourceRing,
-    units: 6
+    ring: dxfMode === 'offset' ? bufferedRing : sourceRing
   });
 
   const kmzBlob = await createKmzBlob(kml);
