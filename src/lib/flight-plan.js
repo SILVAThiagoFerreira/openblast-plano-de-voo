@@ -1,4 +1,5 @@
 import { parseDxfText } from './dxf.js';
+import { buildDxfDocument } from './dxf-export.js';
 import {
   bufferRing,
   buildBoundaryFromGeometry,
@@ -31,6 +32,7 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
   const projectedRing = projectRingToWgs84(bufferedRing, utmZone);
 
   const outputName = `${formatOutputName(flightDate)}.kmz`;
+  const dxfOutputName = `${formatOutputName(flightDate)}.dxf`;
   const flightName = formatOutputName(flightDate);
 
   const sourceAreaM2 = polygonArea(sourceRing);
@@ -60,7 +62,23 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
     }
   });
 
+  const dxf = buildDxfDocument({
+    name: flightName,
+    ring: bufferedRing,
+    metadata: {
+      arquivo: sourceFileName,
+      entidades: parsed.entityCount,
+      pontos: parsed.points.length,
+      area_original: formatAreaSmart(sourceAreaM2),
+      area_recuo: formatAreaSmart(bufferedAreaM2),
+      perimetro_recuo: formatMeters(perimeterM),
+      zone: projectionLabel(utmZone)
+    },
+    units: 6
+  });
+
   const kmzBlob = await createKmzBlob(kml);
+  const dxfBlob = new Blob([dxf], { type: 'application/dxf' });
 
   return {
     parsed,
@@ -69,7 +87,10 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
     projectedRing,
     kml,
     kmzBlob,
+    dxf,
+    dxfBlob,
     outputName,
+    dxfOutputName,
     flightName,
     stats: {
       sourceAreaM2,

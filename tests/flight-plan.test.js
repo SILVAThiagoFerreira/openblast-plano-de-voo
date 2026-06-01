@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import JSZip from 'jszip';
 import { buildBoundaryFromGeometry, bufferRing, polygonArea } from '../src/lib/geometry.js';
 import { buildKmlDocument, createKmzBlob } from '../src/lib/kml.js';
+import { buildDxfDocument } from '../src/lib/dxf-export.js';
 import { parseDxfText } from '../src/lib/dxf.js';
 
 describe('geometry core', () => {
@@ -106,5 +107,24 @@ describe('KML/KMZ', () => {
     const extracted = await doc.async('string');
     expect(extracted).toContain('PLANO DE VOO - 20260525');
     expect(extracted).toContain('<coordinates>');
+  });
+});
+
+describe('DXF export', () => {
+  it('builds a single-layer dxf with layer 0 only', () => {
+    const dxf = buildDxfDocument({
+      name: 'PLANO DE VOO - 20260525',
+      ring: [
+        [0, 0],
+        [100, 0],
+        [100, 100],
+        [0, 100]
+      ]
+    });
+
+    expect(dxf).toContain('LWPOLYLINE');
+    expect(dxf).toContain('\n  8\n0\n');
+    expect(dxf).not.toContain('\n  8\n1\n');
+    expect(dxf.match(/\n  8\n/g)?.length).toBe(1);
   });
 });

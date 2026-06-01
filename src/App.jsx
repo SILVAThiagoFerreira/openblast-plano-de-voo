@@ -26,17 +26,24 @@ function App() {
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState('');
+  const [dxfDownloadUrl, setDxfDownloadUrl] = useState('');
 
   useEffect(() => {
-    if (!result?.kmzBlob) {
+    if (!result?.kmzBlob || !result?.dxfBlob) {
       setDownloadUrl('');
+      setDxfDownloadUrl('');
       return undefined;
     }
 
     const url = URL.createObjectURL(result.kmzBlob);
+    const dxfUrl = URL.createObjectURL(result.dxfBlob);
     setDownloadUrl(url);
+    setDxfDownloadUrl(dxfUrl);
 
-    return () => URL.revokeObjectURL(url);
+    return () => {
+      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(dxfUrl);
+    };
   }, [result]);
 
   useEffect(() => {
@@ -92,7 +99,9 @@ function App() {
   }, [result]);
 
   const outputName = result?.outputName ?? `${formatOutputName(flightDate)}.kmz`;
+  const dxfOutputName = result?.dxfOutputName ?? `${formatOutputName(flightDate)}.dxf`;
   const canDownload = Boolean(downloadUrl && result?.kmzBlob);
+  const canDownloadDxf = Boolean(dxfDownloadUrl && result?.dxfBlob);
 
   async function handleFile(file) {
     if (!file) {
@@ -151,6 +160,17 @@ function App() {
     const anchor = document.createElement('a');
     anchor.href = downloadUrl;
     anchor.download = outputName;
+    anchor.click();
+  }
+
+  function handleDownloadDxf() {
+    if (!canDownloadDxf) {
+      return;
+    }
+
+    const anchor = document.createElement('a');
+    anchor.href = dxfDownloadUrl;
+    anchor.download = dxfOutputName;
     anchor.click();
   }
 
@@ -384,20 +404,27 @@ function App() {
           <article className="panel card-export">
             <PanelHeader
               eyebrow="Saída"
-              title="Exportar KMZ:"
-              description="O arquivo sai com o nome padrão PLANO DE VOO - AAAAMMDD, pronto para abrir no Google Earth."
+              title="Exportar KMZ e DXF:"
+              description="O arquivo sai com o nome padrão PLANO DE VOO - AAAAMMDD, pronto para abrir no Google Earth ou reusar no CAD."
             />
 
             <div className="export-row">
               <div>
-                <span>Arquivo final</span>
+                <span>Arquivos finais</span>
                 <strong>{outputName}</strong>
+                <strong>{dxfOutputName}</strong>
               </div>
 
-              <button className="button button-primary" type="button" onClick={handleDownload} disabled={!canDownload}>
-                <DownloadGlyph />
-                Baixar KMZ
-              </button>
+              <div className="export-actions">
+                <button className="button button-primary" type="button" onClick={handleDownload} disabled={!canDownload}>
+                  <DownloadGlyph />
+                  Baixar KMZ
+                </button>
+                <button className="button button-secondary" type="button" onClick={handleDownloadDxf} disabled={!canDownloadDxf}>
+                  <DownloadGlyph />
+                  Baixar DXF
+                </button>
+              </div>
             </div>
           </article>
         </section>
