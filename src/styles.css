@@ -1,6 +1,6 @@
 :root {
   color-scheme: light;
-  --bg: #f6f7f8;
+  --bg: #f8f8f7;
   --bg-soft: #ffffff;
   --panel: #ffffff;
   --panel-strong: #ffffff;
@@ -14,7 +14,7 @@
   --accent-soft: rgba(226, 106, 18, 0.1);
   --success: #15803d;
   --danger: #dc2626;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
   --radius-xl: 8px;
   --radius-lg: 6px;
   --radius-md: 4px;
@@ -35,9 +35,9 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(0deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px),
-    linear-gradient(180deg, #ffffff 0%, #f6f7f8 100%);
+    linear-gradient(0deg, rgba(17, 17, 17, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.025) 1px, transparent 1px),
+    linear-gradient(180deg, #ffffff 0%, #f8f8f7 100%);
   background-size: 32px 32px, 32px 32px, auto;
   color: var(--text);
 }
@@ -64,26 +64,6 @@ button {
   padding: 28px;
 }
 
-.orb {
-  display: none;
-}
-
-.orb-a {
-  width: 320px;
-  height: 320px;
-  top: 40px;
-  left: -80px;
-  background: rgba(255, 138, 30, 0.16);
-}
-
-.orb-b {
-  width: 420px;
-  height: 420px;
-  right: -120px;
-  top: 120px;
-  background: rgba(61, 107, 255, 0.16);
-}
-
 .hero {
   display: flex;
   justify-content: space-between;
@@ -99,16 +79,15 @@ button {
 }
 
 .brand-logo {
-  width: 152px;
+  width: 96px;
   height: auto;
-  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.26));
 }
 
 .eyebrow {
   margin: 0 0 6px;
-  color: var(--accent-2);
+  color: #c77d37;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   font-size: 0.72rem;
   font-weight: 600;
 }
@@ -121,8 +100,8 @@ button {
 }
 
 .hero h1 {
-  font-size: clamp(2.6rem, 5vw, 4.7rem);
-  line-height: 0.95;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  line-height: 0.98;
 }
 
 .hero-copy {
@@ -143,7 +122,7 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 18px;
+  padding: 10px 14px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--line);
   background: #ffffff;
@@ -190,7 +169,6 @@ button {
   background: #ffffff;
   box-shadow: var(--shadow);
   overflow: hidden;
-  animation: rise 0.55s ease both;
 }
 
 .panel-header {
@@ -200,15 +178,15 @@ button {
 }
 
 .panel-header span {
-  color: var(--accent-2);
+  color: #c77d37;
   text-transform: uppercase;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   font-size: 0.72rem;
   font-weight: 600;
 }
 
 .panel-header h2 {
-  font-size: 1.4rem;
+  font-size: 1.28rem;
 }
 
 .panel-header p {
@@ -225,15 +203,15 @@ button {
   padding: 22px;
   text-align: center;
   border-radius: var(--radius-lg);
-  border: 1.5px dashed rgba(226, 106, 18, 0.28);
+  border: 1px dashed rgba(226, 106, 18, 0.22);
   background: #fbfbfb;
   transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
 }
 
 .dropzone:hover,
 .dropzone-active {
-  border-color: rgba(255, 177, 77, 0.72);
-  background: rgba(255, 138, 30, 0.08);
+  border-color: rgba(226, 106, 18, 0.34);
+  background: rgba(226, 106, 18, 0.04);
   transform: translateY(-1px);
 }
 
@@ -250,11 +228,11 @@ button {
 .dropzone-illustration {
   display: grid;
   place-items: center;
-  width: 74px;
-  height: 74px;
-  border-radius: 22px;
-  background: rgba(255, 138, 30, 0.12);
-  border: 1px solid rgba(255, 177, 77, 0.22);
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: rgba(226, 106, 18, 0.08);
+  border: 1px solid rgba(226, 106, 18, 0.14);
 }
 
 .hidden-input {
@@ -275,7 +253,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 13px 18px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -294,7 +272,7 @@ button {
 .button-primary {
   color: #08111a;
   background: linear-gradient(180deg, #ffb14d 0%, #ff8a1e 100%);
-  box-shadow: 0 16px 30px rgba(255, 138, 30, 0.24);
+  box-shadow: 0 8px 18px rgba(255, 138, 30, 0.14);
 }
 
 .button-secondary {
@@ -385,8 +363,8 @@ button {
   margin-top: 16px;
   padding: 16px 18px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(226, 106, 18, 0.16);
-  background: #fff8f2;
+  border: 1px solid rgba(226, 106, 18, 0.12);
+  background: #fdf8f2;
 }
 
 .hint-box strong {
@@ -403,7 +381,7 @@ button {
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--line);
-  background: linear-gradient(180deg, #fbfbfb 0%, #f3f4f6 100%);
+  background: linear-gradient(180deg, #fcfcfb 0%, #f4f4f2 100%);
   min-height: 520px;
 }
 
@@ -482,8 +460,8 @@ button {
 .legend-swatch {
   width: 14px;
   height: 14px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(17, 17, 17, 0.08);
 }
 
 .legend-fill {
@@ -513,9 +491,9 @@ button {
   gap: 8px;
   padding: 9px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(17, 17, 17, 0.08);
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: #fbfbfb;
   font-size: 0.88rem;
 }
 
@@ -537,38 +515,6 @@ button {
 .export-row strong {
   display: block;
   word-break: break-word;
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.card-upload {
-  animation-delay: 0.05s;
-}
-
-.card-config {
-  animation-delay: 0.1s;
-}
-
-.card-preview {
-  animation-delay: 0.14s;
-}
-
-.card-stats {
-  animation-delay: 0.18s;
-}
-
-.card-export {
-  animation-delay: 0.22s;
 }
 
 @media (max-width: 1180px) {
@@ -595,11 +541,11 @@ button {
 
   .panel {
     padding: 18px;
-    border-radius: 24px;
+    border-radius: var(--radius-xl);
   }
 
   .brand-logo {
-    width: 120px;
+    width: 82px;
   }
 
   .hero h1 {

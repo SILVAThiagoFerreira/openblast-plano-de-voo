@@ -200,9 +200,6 @@ function App() {
 
   return (
     <div className="app-shell">
-      <div className="orb orb-a" />
-      <div className="orb orb-b" />
-
       <header className="hero">
         <div className="brand-block">
           <img className="brand-logo" src={openblastLogoUrl} alt="OpenBlast" />
@@ -360,7 +357,7 @@ function App() {
                 <svg className="preview-svg" viewBox={preview.viewBox} preserveAspectRatio="none" role="img" aria-label="Preview da poligonal">
                   <defs>
                     <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
-                      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+                      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(17,17,17,0.06)" strokeWidth="1" />
                     </pattern>
                     <linearGradient id="buffer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#ffb14d" stopOpacity="0.44" />
