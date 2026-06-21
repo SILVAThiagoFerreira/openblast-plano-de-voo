@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { enaexLogoUrl, sampleDxfUrl } from './assets.js';
+import { openblastLogoUrl, sampleDxfUrl } from './assets.js';
 import { readBlobText, readUrlText } from './lib/file.js';
 import { buildFlightPlanFromDxfText, formatOutputName } from './lib/flight-plan.js';
 import {
@@ -205,7 +205,7 @@ function App() {
 
       <header className="hero">
         <div className="brand-block">
-          <img className="brand-logo" src={enaexLogoUrl} alt="Enaex Brasil" />
+          <img className="brand-logo" src={openblastLogoUrl} alt="OpenBlast" />
           <div>
             <p className="eyebrow">DXF para KMZ</p>
             <h1>Plano de Voo</h1>

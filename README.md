@@ -1,4 +1,4 @@
-# Enaex Plano de Voo
+# OpenBlast Plano de Voo
 
 Aplicação web para importar DXF, gerar poligonal para Google Earth com buffer de 7 m e exportar KMZ.
 
