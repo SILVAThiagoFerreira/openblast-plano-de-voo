@@ -1,23 +1,23 @@
 :root {
-  color-scheme: dark;
-  --bg: #07111b;
-  --bg-soft: #0b1622;
-  --panel: rgba(9, 18, 30, 0.84);
-  --panel-strong: rgba(11, 22, 36, 0.96);
-  --line: rgba(178, 198, 219, 0.16);
-  --line-strong: rgba(255, 255, 255, 0.08);
-  --text: #f4f8fc;
-  --muted: #99a8bc;
-  --muted-2: #7890aa;
-  --accent: #ff8a1e;
-  --accent-2: #ffb14d;
-  --accent-soft: rgba(255, 138, 30, 0.14);
-  --success: #39c48d;
-  --danger: #ff6b6b;
-  --shadow: 0 28px 100px rgba(0, 0, 0, 0.42);
-  --radius-xl: 30px;
-  --radius-lg: 22px;
-  --radius-md: 16px;
+  color-scheme: light;
+  --bg: #f6f7f8;
+  --bg-soft: #ffffff;
+  --panel: #ffffff;
+  --panel-strong: #ffffff;
+  --line: rgba(17, 17, 17, 0.08);
+  --line-strong: rgba(17, 17, 17, 0.12);
+  --text: #111111;
+  --muted: #6a7078;
+  --muted-2: #8c9197;
+  --accent: #e26a12;
+  --accent-2: #f29a3f;
+  --accent-soft: rgba(226, 106, 18, 0.1);
+  --success: #15803d;
+  --danger: #dc2626;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --radius-xl: 8px;
+  --radius-lg: 6px;
+  --radius-md: 4px;
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
 }
 
@@ -35,23 +35,11 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 18% 10%, rgba(255, 138, 30, 0.16), transparent 28%),
-    radial-gradient(circle at 80% 15%, rgba(76, 140, 255, 0.18), transparent 25%),
-    linear-gradient(180deg, #08111a 0%, #04070b 100%);
+    linear-gradient(0deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.03) 1px, transparent 1px),
+    linear-gradient(180deg, #ffffff 0%, #f6f7f8 100%);
+  background-size: 32px 32px, 32px 32px, auto;
   color: var(--text);
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), transparent 100%);
-  opacity: 0.24;
 }
 
 button,
@@ -77,12 +65,7 @@ button {
 }
 
 .orb {
-  position: fixed;
-  z-index: -1;
-  border-radius: 999px;
-  filter: blur(32px);
-  opacity: 0.6;
-  pointer-events: none;
+  display: none;
 }
 
 .orb-a {
@@ -161,11 +144,10 @@ button {
   align-items: center;
   gap: 10px;
   padding: 12px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--line);
-  background: rgba(9, 18, 30, 0.72);
+  background: #ffffff;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(16px);
   color: var(--text);
 }
 
@@ -205,21 +187,10 @@ button {
   padding: 24px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-xl);
-  background:
-    linear-gradient(180deg, rgba(11, 21, 34, 0.96), rgba(6, 12, 20, 0.86));
+  background: #ffffff;
   box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
   overflow: hidden;
   animation: rise 0.55s ease both;
-}
-
-.panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(circle at 12% 0%, rgba(255, 138, 30, 0.1), transparent 24%);
-  pointer-events: none;
 }
 
 .panel-header {
@@ -254,8 +225,8 @@ button {
   padding: 22px;
   text-align: center;
   border-radius: var(--radius-lg);
-  border: 1.5px dashed rgba(255, 177, 77, 0.36);
-  background: rgba(255, 255, 255, 0.02);
+  border: 1.5px dashed rgba(226, 106, 18, 0.28);
+  background: #fbfbfb;
   transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
 }
 
@@ -328,14 +299,14 @@ button {
 
 .button-secondary {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid var(--line);
 }
 
 .button-ghost {
   color: var(--text);
-  background: transparent;
-  border: 1px solid rgba(255, 177, 77, 0.22);
+  background: #f8f8f8;
+  border: 1px solid var(--line);
 }
 
 .file-summary {
@@ -348,9 +319,9 @@ button {
 .file-summary div,
 .stat-card {
   padding: 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: #ffffff;
 }
 
 .file-summary span,
@@ -394,11 +365,11 @@ button {
 .field input,
 .field select {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
   padding: 13px 14px;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: #ffffff;
   outline: none;
   transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
@@ -413,9 +384,9 @@ button {
 .hint-box {
   margin-top: 16px;
   padding: 16px 18px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 177, 77, 0.16);
-  background: rgba(255, 138, 30, 0.08);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(226, 106, 18, 0.16);
+  background: #fff8f2;
 }
 
 .hint-box strong {
@@ -429,10 +400,10 @@ button {
 }
 
 .preview-wrap {
-  border-radius: 26px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, rgba(4, 8, 14, 0.72), rgba(7, 11, 18, 0.95));
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #fbfbfb 0%, #f3f4f6 100%);
   min-height: 520px;
 }
 
@@ -451,7 +422,7 @@ button {
 
 .preview-source {
   fill: none;
-  stroke: rgba(240, 246, 255, 0.92);
+  stroke: rgba(17, 17, 17, 0.9);
   stroke-width: 2.3;
   stroke-linejoin: round;
   stroke-dasharray: 8 6;
