@@ -222,8 +222,8 @@ function App() {
           <article className="panel card-upload">
             <PanelHeader
               eyebrow="Entrada"
-              title="Importe o DXF:"
-              description="Arraste e solte o arquivo ou use o seletor. O sistema lê o desenho, extrai o contorno e prepara o recuo."
+              title="Importar DXF"
+              description="Arraste e solte o arquivo ou use o seletor."
             />
 
             <div
@@ -286,7 +286,7 @@ function App() {
               </div>
               <div>
                 <span>Destino</span>
-                <strong>Google Earth / KMZ / DXF contorno</strong>
+                <strong>Google Earth (KMZ)</strong>
               </div>
             </div>
           </article>
@@ -294,8 +294,8 @@ function App() {
           <article className="panel card-config">
             <PanelHeader
               eyebrow="Configuração"
-              title="Parâmetros de Exportação:"
-              description="A geometria CAD normalmente não traz CRS explícito. Ajuste a zona UTM se a poligonal aparecer deslocada no Google Earth."
+              title="Parâmetros de Exportação"
+              description="Ajuste a zona UTM se a poligonal aparecer deslocada."
             />
 
             <div className="field-grid">
@@ -348,8 +348,8 @@ function App() {
           <article className="panel card-preview">
             <PanelHeader
               eyebrow="Preview"
-              title="Poligonal Gerada:"
-              description="Linha clara = contorno lido do DXF. Área sólida = poligonal com o recuo aplicado."
+              title="Poligonal Gerada"
+              description="Linha tracejada = contorno original. Área = poligonal com recuo aplicado."
             />
 
             <div className="preview-wrap">
@@ -360,8 +360,8 @@ function App() {
                       <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(17,17,17,0.06)" strokeWidth="1" />
                     </pattern>
                     <linearGradient id="buffer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ffb14d" stopOpacity="0.44" />
-                      <stop offset="100%" stopColor="#ff8a1e" stopOpacity="0.20" />
+                      <stop offset="0%" stopColor="#e20613" stopOpacity="0.32" />
+                      <stop offset="100%" stopColor="#e20613" stopOpacity="0.14" />
                     </linearGradient>
                   </defs>
 
@@ -386,8 +386,8 @@ function App() {
           <article className="panel card-stats">
             <PanelHeader
               eyebrow="Medições"
-              title="Resumo Técnico:"
-              description="Os números abaixo ajudam a conferir se o DXF foi interpretado corretamente antes do download."
+              title="Resumo Técnico"
+              description="Confira se o DXF foi interpretado corretamente antes do download."
             />
 
             <div className="stats-grid">
@@ -411,8 +411,8 @@ function App() {
           <article className="panel card-export">
             <PanelHeader
               eyebrow="Saída"
-              title="Exportar KMZ e DXF:"
-              description="O KMZ sai com o recuo aplicado e o DXF sai como contorno bruto, em linha única, na layer 0."
+              title="Exportar KMZ e DXF"
+              description="KMZ com recuo aplicado e DXF como contorno bruto."
             />
 
             <div className="export-row">
