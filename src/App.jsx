@@ -200,6 +200,13 @@ function App() {
 
   return (
     <div className="app-shell">
+      <header className="openblast-hubbar">
+        <div className="openblast-hubbar__brand">
+          <img src={openblastLogoUrl} alt="OpenBlast" />
+          <span>Open<strong>Blast</strong></span>
+        </div>
+        <span className="openblast-hubbar__title">Plano de Voo</span>
+      </header>
       <header className="hero">
         <div className="brand-block">
           <img className="brand-logo" src={openblastLogoUrl} alt="OpenBlast" />
