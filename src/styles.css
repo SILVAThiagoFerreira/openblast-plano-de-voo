@@ -75,6 +75,10 @@ button {
   gap: 24px;
   align-items: flex-end;
   margin-bottom: 24px;
+  padding: 14px 18px;
+  border-top: 3px solid #ed1c24;
+  border-bottom: 1px solid #e9ecef;
+  background: #fff;
 }
 
 .brand-block {
@@ -84,9 +88,9 @@ button {
 }
 
 .brand-logo {
-  width: auto;
-  max-width: 28px;
-  height: 30px;
+  width: 112px !important;
+  max-width: 112px;
+  height: 38px;
   object-fit: contain;
 }
 
@@ -541,7 +545,7 @@ button {
 }
 
 @media (max-width: 1180px) {
-  .hero {
+.hero {
     flex-direction: column;
     align-items: flex-start;
   }
