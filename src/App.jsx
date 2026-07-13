@@ -205,14 +205,14 @@ function App() {
           <img src={openblastLogoUrl} alt="OpenBlast" />
           <span>Open<strong>Blast</strong></span>
         </div>
-        <span className="openblast-hubbar__title">Plano de Voo</span>
+        <span className="openblast-hubbar__title">Conversor DXF · Limite + KMZ</span>
       </header>
       <header className="hero">
         <div className="brand-block">
-          <img className="brand-logo" src={openblastLogoUrl} alt="OpenBlast" />
           <div>
-            <p className="eyebrow">DXF para KMZ</p>
-            <h1>Plano de Voo</h1>
+            <p className="eyebrow">Ferramenta 01 · Conversão geoespacial</p>
+            <h1>Conversor Boreholes/DXF</h1>
+            <p className="hero-subtitle">Gere limite DXF e KMZ para inspeção e planejamento no Google Earth.</p>
           </div>
         </div>
 

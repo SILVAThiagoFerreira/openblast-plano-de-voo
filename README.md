@@ -1,6 +1,10 @@
-# OpenBlast Plano de Voo
+# OpenBlast Conversor Boreholes/DXF
 
-Aplicação web para importar DXF, gerar poligonal para Google Earth com buffer de 7 m e exportar KMZ.
+Aplicação web para importar DXF, gerar limite operacional com buffer configurável e exportar DXF/KMZ para uso no Google Earth.
+
+## Identidade da ferramenta
+
+A interface segue o padrão visual OpenBlast do Hub: topo técnico azul-marinho, acento vermelho pontual, tipografia IBM Plex e componentes quadrados/retangulares. O nome exibido é **Conversor Boreholes/DXF**; “Limite DXF + KMZ” identifica o resultado da conversão.
 
 ## Como rodar
 
