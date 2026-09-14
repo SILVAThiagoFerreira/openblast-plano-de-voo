@@ -166,10 +166,14 @@ export function buildPreviewTransform(rings, width = 1000, height = 680, padding
     usableWidth / Math.max(box.width, 1),
     usableHeight / Math.max(box.height, 1)
   );
+  const drawnWidth = box.width * scale;
+  const drawnHeight = box.height * scale;
+  const offsetX = (width - drawnWidth) / 2;
+  const offsetY = (height - drawnHeight) / 2;
 
   const mapPoint = ([x, y]) => [
-    padding + (x - box.minX) * scale,
-    height - padding - (y - box.minY) * scale
+    offsetX + (x - box.minX) * scale,
+    height - offsetY - (y - box.minY) * scale
   ];
 
   return {
@@ -214,29 +218,6 @@ export function convexHull(points) {
   return [...lower, ...upper];
 }
 
-function rectangleFromPoints(points, padding = 1) {
-  const box = bboxOfPoints(points);
-  const margin = Math.max(padding, Math.max(box.width, box.height) * 0.05 || padding);
-  return bboxToRing(box, margin);
-}
-
-function segmentRectangle(a, b, padding = 1) {
-  const dx = b[0] - a[0];
-  const dy = b[1] - a[1];
-  const length = Math.hypot(dx, dy) || 1;
-  const ux = dx / length;
-  const uy = dy / length;
-  const px = -uy * padding;
-  const py = ux * padding;
-
-  return [
-    [a[0] + px, a[1] + py],
-    [b[0] + px, b[1] + py],
-    [b[0] - px, b[1] - py],
-    [a[0] - px, a[1] - py]
-  ];
-}
-
 export function chooseLargestRing(rings) {
   let winner = null;
   let area = -1;
@@ -267,12 +248,8 @@ export function buildBoundaryFromGeometry({ points = [], closedPolygons = [] } =
     return [];
   }
 
-  if (cloud.length === 1) {
-    return rectangleFromPoints(cloud, 1);
-  }
-
-  if (cloud.length === 2) {
-    return segmentRectangle(cloud[0], cloud[1], 1);
+  if (cloud.length < 3) {
+    return [];
   }
 
   const hull = concaveman(cloud, 12, 20);
@@ -288,7 +265,7 @@ export function buildBoundaryFromGeometry({ points = [], closedPolygons = [] } =
 export function bufferRing(ring, distanceMeters) {
   const cleanRing = normalizeRing(ring);
   if (cleanRing.length < 3) {
-    return rectangleFromPoints(cleanRing, distanceMeters || 1);
+    return [];
   }
 
   const path = cleanRing.map(([x, y]) => ({
@@ -304,7 +281,7 @@ export function bufferRing(ring, distanceMeters) {
 
   const rings = solution.map((currentPath) => currentPath.map((point) => [point.X / CLIPPER_SCALE, point.Y / CLIPPER_SCALE]));
   if (!rings.length) {
-    return rectangleFromPoints(cleanRing, distanceMeters || 1);
+    return Number(distanceMeters) === 0 ? cleanRing : [];
   }
 
   return chooseLargestRing(rings);

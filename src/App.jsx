@@ -11,13 +11,29 @@ import {
   ringToSvgPath
 } from './lib/geometry.js';
 
-const todayIso = new Date().toISOString().slice(0, 10);
+const now = new Date();
+const todayIso = [
+  now.getFullYear(),
+  String(now.getMonth() + 1).padStart(2, '0'),
+  String(now.getDate()).padStart(2, '0')
+].join('-');
 const defaultZone = '24';
+
+function getBufferMeters(value) {
+  const text = String(value ?? '').trim();
+  if (!text) {
+    return 7;
+  }
+
+  const numericValue = Number(text);
+  return Number.isFinite(numericValue) ? Math.max(0, numericValue) : 7;
+}
 
 function App() {
   const fileInputRef = useRef(null);
   const [sourceText, setSourceText] = useState('');
   const [sourceName, setSourceName] = useState('');
+  const [sourceRevision, setSourceRevision] = useState(0);
   const [dragActive, setDragActive] = useState(false);
   const [utmZone, setUtmZone] = useState(defaultZone);
   const [bufferMeters, setBufferMeters] = useState(7);
@@ -26,6 +42,7 @@ function App() {
   const [status, setStatus] = useState('Aguardando DXF');
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState('');
   const [dxfDownloadUrl, setDxfDownloadUrl] = useState('');
 
@@ -52,18 +69,21 @@ function App() {
 
     if (!sourceText) {
       setResult(null);
-      setError('');
-      setStatus('Aguardando DXF');
+      setIsProcessing(false);
+      if (!error) {
+        setStatus('Aguardando DXF');
+      }
       return undefined;
     }
 
+    setIsProcessing(true);
     setStatus('Gerando poligonal...');
     setError('');
 
     void (async () => {
       try {
         const built = await buildFlightPlanFromDxfText(sourceText, {
-          bufferMeters: Number(bufferMeters) || 7,
+          bufferMeters: getBufferMeters(bufferMeters),
           utmZone: Number(utmZone) || 24,
           flightDate,
           sourceFileName: sourceName || 'DXF',
@@ -75,6 +95,7 @@ function App() {
         }
 
         setResult(built);
+        setIsProcessing(false);
         setStatus('Poligonal pronta para exportação');
       } catch (err) {
         if (cancelled) {
@@ -82,6 +103,7 @@ function App() {
         }
 
         setResult(null);
+        setIsProcessing(false);
         setError(err instanceof Error ? err.message : 'Falha ao processar o DXF');
         setStatus('Erro ao gerar a poligonal');
       }
@@ -90,7 +112,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [bufferMeters, dxfMode, flightDate, sourceName, sourceText, utmZone]);
+  }, [bufferMeters, dxfMode, flightDate, sourceName, sourceRevision, sourceText, utmZone]);
 
   const preview = useMemo(() => {
     if (!result?.sourceRing?.length || !result?.bufferedRing?.length) {
@@ -102,8 +124,8 @@ function App() {
 
   const outputName = result?.outputName ?? `${formatOutputName(flightDate)}.kmz`;
   const dxfOutputName = result?.dxfOutputName ?? `${formatOutputName(flightDate)} - ${dxfMode === 'offset' ? 'offset' : 'contorno'}.dxf`;
-  const canDownload = Boolean(downloadUrl && result?.kmzBlob);
-  const canDownloadDxf = Boolean(dxfDownloadUrl && result?.dxfBlob);
+  const canDownload = Boolean(downloadUrl && result?.kmzBlob && !isProcessing);
+  const canDownloadDxf = Boolean(dxfDownloadUrl && result?.dxfBlob && !isProcessing);
 
   async function handleFile(file) {
     if (!file) {
@@ -111,10 +133,17 @@ function App() {
     }
 
     if (!file.name.toLowerCase().endsWith('.dxf')) {
+      setIsProcessing(false);
+      setResult(null);
+      setSourceName('');
+      setSourceText('');
       setError('Selecione um arquivo .dxf válido.');
+      setStatus('Arquivo inválido');
       return;
     }
 
+    setIsProcessing(true);
+    setResult(null);
     setError('');
     setStatus('Lendo DXF...');
 
@@ -122,7 +151,12 @@ function App() {
       const text = await readBlobText(file);
       setSourceName(file.name);
       setSourceText(text);
+      setSourceRevision((revision) => revision + 1);
     } catch (err) {
+      setResult(null);
+      setSourceName('');
+      setSourceText('');
+      setIsProcessing(false);
       setError(err instanceof Error ? err.message : 'Falha ao ler o DXF');
       setStatus('Erro ao ler o arquivo');
     } finally {
@@ -133,6 +167,8 @@ function App() {
   }
 
   async function handleSample() {
+    setIsProcessing(true);
+    setResult(null);
     setError('');
     setStatus('Carregando exemplo...');
 
@@ -140,7 +176,11 @@ function App() {
       const text = await readUrlText(sampleDxfUrl);
       setSourceName('holes-PP190526_B.dxf');
       setSourceText(text);
+      setSourceRevision((revision) => revision + 1);
     } catch (err) {
+      setSourceName('');
+      setSourceText('');
+      setIsProcessing(false);
       setError(err instanceof Error ? err.message : 'Falha ao carregar o exemplo');
       setStatus('Erro ao carregar o exemplo');
     }
@@ -176,16 +216,21 @@ function App() {
     anchor.click();
   }
 
-  const stats = result
+  const keyStats = result
     ? [
-        { label: 'Entidades lidas', value: formatNumber(result.parsed.entityCount, 0) },
-        { label: 'Pontos úteis', value: formatNumber(result.parsed.points.length, 0) },
-        { label: 'Vértices da borda', value: formatNumber(result.sourceRing.length, 0) },
-        { label: 'Vértices do recuo', value: formatNumber(result.bufferedRing.length, 0) },
-        { label: 'Área original', value: formatAreaSmart(result.stats.sourceAreaM2) },
         { label: 'Área final', value: formatAreaSmart(result.stats.bufferedAreaM2) },
-        { label: 'Perímetro final', value: formatMeters(result.stats.perimeterM) },
+        { label: 'Perímetro', value: formatMeters(result.stats.perimeterM) },
+        { label: 'Vértices do recuo', value: formatNumber(result.bufferedRing.length, 0) },
         { label: 'Unidade', value: result.parsed.unitInfo.label }
+      ]
+    : [];
+
+  const detailStats = result
+    ? [
+        { label: 'Entidades', value: formatNumber(result.parsed.entityCount, 0) },
+        { label: 'Pontos', value: formatNumber(result.parsed.points.length, 0) },
+        { label: 'Vértices da borda', value: formatNumber(result.sourceRing.length, 0) },
+        { label: 'Área original', value: formatAreaSmart(result.stats.sourceAreaM2) }
       ]
     : [];
 
@@ -202,166 +247,131 @@ function App() {
     <div className="app-shell">
       <header className="openblast-hubbar">
         <div className="openblast-hubbar__brand">
-          <img src={openblastLogoUrl} alt="OpenBlast" />
+          <img src={openblastLogoUrl} alt="" />
           <span>Open<strong>Blast</strong></span>
         </div>
-        <span className="openblast-hubbar__title">Conversor DXF · Limite + KMZ</span>
+        <span className="openblast-hubbar__title">Conversor DXF</span>
       </header>
       <header className="hero">
-        <div className="brand-block">
-          <div>
-            <p className="eyebrow">Ferramenta 01 · Conversão geoespacial</p>
-            <h1>Conversor Boreholes/DXF</h1>
-            <p className="hero-subtitle">Gere limite DXF e KMZ para inspeção e planejamento no Google Earth.</p>
-          </div>
+        <div className="hero-copy">
+          <p className="eyebrow">Limite de voo</p>
+          <h1>Conversor Boreholes/DXF</h1>
+          <p className="hero-subtitle">Gere contornos para o Google Earth.</p>
         </div>
 
-        <div className="hero-copy">
-          <div className="status-pill" aria-live="polite">
-            <span className={`status-dot ${error ? 'status-dot-error' : result ? 'status-dot-ok' : 'status-dot-wait'}`} />
+        <div className="hero-status">
+          <div className="status-pill" role={error ? 'alert' : 'status'} aria-live={error ? 'assertive' : 'polite'}>
+            <span className={error ? 'status-dot status-dot-error' : isProcessing ? 'status-dot status-dot-wait' : result ? 'status-dot status-dot-ok' : 'status-dot status-dot-wait'} />
             <span>{error || status}</span>
           </div>
+          {sourceName ? <span className="hero-file">{sourceName}</span> : null}
         </div>
       </header>
 
       <main className="dashboard">
-        <section className="stack">
-          <article className="panel card-upload">
-            <PanelHeader
-              eyebrow="Entrada"
-              title="Importar DXF"
-              description="Arraste e solte o arquivo ou use o seletor."
-            />
+        <section className="panel controls-panel" aria-labelledby="controls-title">
+          <SectionHeading id="controls-title" title="Preparar conversão" meta={sourceName ? 'Arquivo carregado' : 'Adicione um DXF'} />
 
-            <div
-              className={`dropzone ${dragActive ? 'dropzone-active' : ''}`}
-              onDragEnter={(event) => {
-                event.preventDefault();
-                setDragActive(true);
-              }}
-              onDragOver={(event) => {
-                event.preventDefault();
-                setDragActive(true);
-              }}
-              onDragLeave={(event) => {
-                event.preventDefault();
-                setDragActive(false);
-              }}
-              onDrop={handleDrop}
-              role="button"
-              tabIndex={0}
-              onClick={() => fileInputRef.current?.click()}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
+          <div className="controls-layout">
+            <div className="source-area">
+              <label
+                className={dragActive ? 'dropzone dropzone-active' : 'dropzone'}
+                htmlFor="dxf-input"
+                onDragEnter={(event) => {
                   event.preventDefault();
-                  fileInputRef.current?.click();
-                }
-              }}
-            >
-              <div className="dropzone-illustration">
-                <UploadGlyph />
-              </div>
-              <div>
-                <strong>Solte o DXF aqui</strong>
-                <p>Ou clique para escolher um arquivo local.</p>
-              </div>
-              <input
-                ref={fileInputRef}
-                className="hidden-input"
-                type="file"
-                accept=".dxf"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  void handleFile(file);
+                  setDragActive(true);
                 }}
-              />
-            </div>
-
-            <div className="actions-row">
-              <button className="button button-secondary" type="button" onClick={() => fileInputRef.current?.click()}>
-                Escolher arquivo
-              </button>
-              <button className="button button-ghost" type="button" onClick={() => void handleSample()}>
-                Carregar exemplo
-              </button>
-            </div>
-
-            <div className="file-summary">
-              <div>
-                <span>Arquivo ativo</span>
-                <strong>{sourceName || 'Nenhum arquivo selecionado'}</strong>
-              </div>
-              <div>
-                <span>Destino</span>
-                <strong>Google Earth (KMZ)</strong>
-              </div>
-            </div>
-          </article>
-
-          <article className="panel card-config">
-            <PanelHeader
-              eyebrow="Configuração"
-              title="Parâmetros de Exportação"
-              description="Ajuste a zona UTM se a poligonal aparecer deslocada."
-            />
-
-            <div className="field-grid">
-              <label className="field">
-                <span>Data do plano</span>
-                <input type="date" value={flightDate} onChange={(event) => setFlightDate(event.target.value)} />
-              </label>
-
-              <label className="field">
-                <span>Zona UTM</span>
-                <select value={utmZone} onChange={(event) => setUtmZone(event.target.value)}>
-                  <option value="18">18S</option>
-                  <option value="19">19S</option>
-                  <option value="20">20S</option>
-                  <option value="21">21S</option>
-                  <option value="22">22S</option>
-                  <option value="23">23S</option>
-                  <option value="24">24S</option>
-                  <option value="25">25S</option>
-                </select>
-              </label>
-
-              <label className="field field-wide">
-                <span>Recuo lateral</span>
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setDragActive(true);
+                }}
+                onDragLeave={(event) => {
+                  event.preventDefault();
+                  setDragActive(false);
+                }}
+                onDrop={handleDrop}
+              >
+                <span className="dropzone-illustration">
+                  <UploadGlyph />
+                </span>
+                <span className="dropzone-copy">
+                  <strong>{sourceName || 'Adicionar arquivo DXF'}</strong>
+                  <span>{sourceName ? 'Clique para trocar o arquivo' : 'Arraste aqui ou clique para escolher'}</span>
+                </span>
+                <span className="dropzone-format">.DXF</span>
                 <input
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={bufferMeters}
-                  onChange={(event) => setBufferMeters(event.target.value)}
+                  id="dxf-input"
+                  ref={fileInputRef}
+                  className="hidden-input"
+                  type="file"
+                  accept=".dxf"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    void handleFile(file);
+                  }}
                 />
               </label>
-
-              <label className="field field-wide">
-                <span>DXF de saída</span>
-                <select value={dxfMode} onChange={(event) => setDxfMode(event.target.value)}>
-                  <option value="contour">Contorno sem offset</option>
-                  <option value="offset">Contorno com offset</option>
-                </select>
-              </label>
+              <button className="button button-ghost sample-button" type="button" onClick={() => void handleSample()}>
+                Usar exemplo
+              </button>
             </div>
 
-            <div className="hint-box">
-              <strong>{projectionLabel(utmZone)}</strong>
+            <div className="settings-area">
+              <div className="field-grid">
+                <label className="field">
+                  <span>Data</span>
+                  <input type="date" value={flightDate} onChange={(event) => setFlightDate(event.target.value)} />
+                </label>
+
+                <label className="field">
+                  <span>Zona UTM</span>
+                  <select value={utmZone} onChange={(event) => setUtmZone(event.target.value)}>
+                    <option value="18">18S</option>
+                    <option value="19">19S</option>
+                    <option value="20">20S</option>
+                    <option value="21">21S</option>
+                    <option value="22">22S</option>
+                    <option value="23">23S</option>
+                    <option value="24">24S</option>
+                    <option value="25">25S</option>
+                  </select>
+                </label>
+
+                <label className="field">
+                  <span>Recuo lateral (m)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={bufferMeters}
+                    onChange={(event) => setBufferMeters(event.target.value)}
+                  />
+                </label>
+
+                <label className="field">
+                  <span>DXF de saída</span>
+                  <select value={dxfMode} onChange={(event) => setDxfMode(event.target.value)}>
+                    <option value="contour">Contorno sem offset</option>
+                    <option value="offset">Contorno com offset</option>
+                  </select>
+                </label>
+              </div>
+              <p className="projection-note">{projectionLabel(utmZone)}</p>
             </div>
-          </article>
+          </div>
         </section>
 
-        <section className="stack">
-          <article className="panel card-preview">
-            <PanelHeader
-              eyebrow="Preview"
-              title="Poligonal Gerada"
-              description="Linha tracejada = contorno original. Área = poligonal com recuo aplicado."
+        <section className="result-layout" aria-labelledby="preview-title">
+          <article className="panel card-preview" aria-labelledby="preview-title" aria-busy={isProcessing}>
+            <SectionHeading
+              id="preview-title"
+              title="Área de voo"
+              meta={isProcessing ? 'Processando...' : result ? 'Pronta' : 'Aguardando DXF'}
             />
 
-            <div className="preview-wrap">
+            <div className={isProcessing && result ? 'preview-wrap preview-wrap-processing' : 'preview-wrap'}>
               {preview && result ? (
-                <svg className="preview-svg" viewBox={preview.viewBox} preserveAspectRatio="none" role="img" aria-label="Preview da poligonal">
+                <svg className="preview-svg" viewBox={preview.viewBox} preserveAspectRatio="xMidYMid meet" role="img" aria-label="Prévia da área de voo">
                   <defs>
                     <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
                       <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(17,17,17,0.06)" strokeWidth="1" />
@@ -379,80 +389,103 @@ function App() {
               ) : (
                 <div className="preview-empty">
                   <UploadGlyph large />
-                  <p>Carregue um DXF para visualizar a poligonal antes da exportação.</p>
+                  <p>Importe um DXF para ver a área.</p>
                 </div>
               )}
+              {isProcessing && result ? <span className="preview-busy">Atualizando</span> : null}
             </div>
 
             <div className="legend-row">
-              <span><i className="legend-swatch legend-fill" /> Recuo</span>
-              <span><i className="legend-swatch legend-line" /> Contorno original</span>
+              <span><i className="legend-swatch legend-fill" /> Área com recuo</span>
+              <span><i className="legend-swatch legend-line" /> Original</span>
             </div>
           </article>
 
-          <article className="panel card-stats">
-            <PanelHeader
-              eyebrow="Medições"
-              title="Resumo Técnico"
-              description="Confira se o DXF foi interpretado corretamente antes do download."
-            />
+          <aside className="result-side">
+            <article className="panel card-stats" aria-labelledby="stats-title">
+              <SectionHeading id="stats-title" title="Leitura" meta={result ? 'Dados calculados' : 'Sem dados'} />
 
-            <div className="stats-grid">
-              {stats.map((item) => (
-                <div className="stat-card" key={item.label}>
-                  <span>{item.label}</span>
-                  <strong>{item.value}</strong>
+              {keyStats.length ? (
+                <div className="stats-grid">
+                  {keyStats.map((item) => (
+                    <div className="stat-card" key={item.label}>
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : (
+                <div className="empty-state">As medições aparecem após a importação.</div>
+              )}
 
-            <div className="chip-row">
-              {entityChips.length ? entityChips.map(([type, count]) => (
-                <span className="chip" key={type}>
-                  {type} {count}
-                </span>
-              )) : <span className="chip chip-muted">Sem entidades lidas ainda</span>}
-            </div>
-          </article>
+              {result ? (
+                <details className="entity-details">
+                  <summary>Mais detalhes da leitura</summary>
+                  <div className="stats-grid stats-grid-secondary">
+                    {detailStats.map((item) => (
+                      <div className="stat-card" key={item.label}>
+                        <span>{item.label}</span>
+                        <strong>{item.value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="chip-row">
+                    {entityChips.map(([type, count]) => (
+                      <span className="chip" key={type}>
+                        {type} {formatNumber(count, 0)}
+                      </span>
+                    ))}
+                  </div>
+                </details>
+              ) : null}
+            </article>
 
-          <article className="panel card-export">
-            <PanelHeader
-              eyebrow="Saída"
-              title="Exportar KMZ e DXF"
-              description="KMZ com recuo aplicado e DXF como contorno bruto."
-            />
+            <article className="panel card-export" aria-labelledby="export-title">
+              <SectionHeading id="export-title" title="Baixar arquivos" meta={isProcessing ? 'Processando...' : result ? 'Prontos' : 'Aguardando DXF'} />
 
-            <div className="export-row">
-              <div>
-                <span>Arquivos finais</span>
-                <strong>{outputName}</strong>
-                <strong>{dxfOutputName}</strong>
-              </div>
+              {result ? (
+                <>
+                  <div className="export-list">
+                    <div className="export-item">
+                      <div className="export-file">
+                        <span className="file-badge">KMZ</span>
+                        <span className="file-name">{outputName}</span>
+                      </div>
+                      <button className="button button-primary" type="button" onClick={handleDownload} disabled={!canDownload} aria-label={'Baixar ' + outputName}>
+                        <DownloadGlyph />
+                        <span>Baixar</span>
+                      </button>
+                    </div>
+                    <div className="export-item">
+                      <div className="export-file">
+                        <span className="file-badge file-badge-muted">DXF</span>
+                        <span className="file-name">{dxfOutputName}</span>
+                      </div>
+                      <button className="button button-secondary" type="button" onClick={handleDownloadDxf} disabled={!canDownloadDxf} aria-label={'Baixar ' + dxfOutputName}>
+                        <DownloadGlyph />
+                        <span>Baixar</span>
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="export-actions">
-                <button className="button button-primary" type="button" onClick={handleDownload} disabled={!canDownload}>
-                  <DownloadGlyph />
-                  Baixar KMZ
-                </button>
-                <button className="button button-secondary" type="button" onClick={handleDownloadDxf} disabled={!canDownloadDxf}>
-                  <DownloadGlyph />
-                  Baixar DXF
-                </button>
-              </div>
-            </div>
-          </article>
+                  <p className="export-note">KMZ com recuo · DXF {dxfMode === 'offset' ? 'com offset' : 'sem offset'}</p>
+                </>
+              ) : (
+                <div className="empty-state">Os arquivos aparecem após a importação.</div>
+              )}
+            </article>
+          </aside>
         </section>
       </main>
     </div>
   );
 }
 
-function PanelHeader({ eyebrow, title, description }) {
+function SectionHeading({ id, title, meta }) {
   return (
-    <div className="panel-header">
-      <span>{eyebrow}</span>
-      <h2>{title}</h2>
-      <p>{description}</p>
+    <div className="panel-heading">
+      <h2 id={id}>{title}</h2>
+      {meta ? <span>{meta}</span> : null}
     </div>
   );
 }

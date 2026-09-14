@@ -27,9 +27,24 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
     dxfMode = 'contour'
   } = options;
 
+  const numericBufferMeters = Number(bufferMeters);
+  const configuredBufferMeters = Number.isFinite(numericBufferMeters)
+    ? Math.max(0, numericBufferMeters)
+    : 7;
+
   const parsed = parseDxfText(text);
   const sourceRing = buildBoundaryFromGeometry(parsed);
-  const bufferedRing = bufferRing(sourceRing, bufferMeters);
+  const sourceAreaM2 = polygonArea(sourceRing);
+  if (sourceRing.length < 3 || !Number.isFinite(sourceAreaM2) || sourceAreaM2 <= 0) {
+    throw new Error('Não foi encontrada uma poligonal válida no DXF. Use pelo menos três pontos não colineares ou uma polilinha fechada.');
+  }
+
+  const bufferedRing = bufferRing(sourceRing, configuredBufferMeters);
+  const bufferedAreaM2 = polygonArea(bufferedRing);
+  if (bufferedRing.length < 3 || !Number.isFinite(bufferedAreaM2) || bufferedAreaM2 <= 0) {
+    throw new Error('Não foi possível gerar o recuo para a geometria encontrada.');
+  }
+
   const projectedRing = projectRingToWgs84(bufferedRing, utmZone);
 
   const outputName = `${formatOutputName(flightDate)}.kmz`;
@@ -37,16 +52,14 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
   const dxfOutputName = `${formatOutputName(flightDate)} - ${dxfSuffix}.dxf`;
   const flightName = formatOutputName(flightDate);
 
-  const sourceAreaM2 = polygonArea(sourceRing);
-  const bufferedAreaM2 = polygonArea(bufferedRing);
   const perimeterM = polygonPerimeter(bufferedRing);
 
   const description = [
-    '<p>Poligonal gerada a partir de DXF com recuo de 7 m.</p>',
+    '<p>Poligonal gerada a partir de DXF com recuo de ' + formatMeters(configuredBufferMeters) + '.</p>',
     `<p><strong>Arquivo:</strong> ${sourceFileName}</p>`,
     `<p><strong>CRS:</strong> ${projectionLabel(utmZone)}</p>`,
     `<p><strong>Unidade do DXF:</strong> ${parsed.unitInfo.label}</p>`,
-    `<p><strong>Recuo:</strong> ${formatMeters(bufferMeters)}</p>`
+    `<p><strong>Recuo:</strong> ${formatMeters(configuredBufferMeters)}</p>`
   ].join('');
 
   const kml = buildKmlDocument({

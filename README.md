@@ -15,10 +15,13 @@ npm run dev
 
 ## Como publicar
 
-1. Rode `npm run deploy`.
-2. Configure o GitHub Pages para servir a branch `gh-pages` na raiz.
+O caminho oficial é o GitHub Actions:
 
-O deploy é feito localmente pelo script `gh-pages`, sem necessidade de workflow.
+1. Faça commit e push na branch `main`.
+2. O workflow `.github/workflows/pages.yml` instala as dependências, executa os testes, gera `dist` e publica no GitHub Pages.
+3. Confirme o resultado em `https://silvathiagoferreira.github.io/openblast-plano-de-voo/`.
+
+O script `npm run deploy` continua disponível como alternativa manual para ambientes configurados com a branch `gh-pages`; não o use junto com o workflow oficial para evitar duas versões publicadas.
 
 ## Observações
 

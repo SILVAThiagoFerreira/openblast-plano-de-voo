@@ -225,5 +225,124 @@ EOF
 
     expect(built.dxfOutputName).toContain('offset');
     expect(built.dxf).toContain('\n  0\nPOLYLINE\n');
+    expect(built.kml).toContain('recuo de 7,00 m');
+  });
+
+  it('keeps a zero buffer in the complete flight plan pipeline', async () => {
+    const dxf = `0
+SECTION
+2
+ENTITIES
+0
+LWPOLYLINE
+8
+0
+90
+4
+70
+1
+10
+0
+20
+0
+10
+100
+20
+0
+10
+100
+20
+100
+10
+0
+20
+100
+0
+ENDSEC
+0
+EOF
+`;
+
+    const built = await buildFlightPlanFromDxfText(dxf, {
+      bufferMeters: 0,
+      utmZone: 24,
+      flightDate: new Date('2026-05-25T00:00:00Z'),
+      sourceFileName: 'zero-buffer.dxf'
+    });
+
+    expect(built.stats.bufferedAreaM2).toBeCloseTo(built.stats.sourceAreaM2, 0);
+    expect(built.kml).toContain('recuo de 0,00 m');
+  });
+
+  it('rejects a DXF without usable geometry', async () => {
+    const dxf = `0
+SECTION
+2
+ENTITIES
+0
+TEXT
+8
+0
+1
+Somente anotação
+10
+0
+20
+0
+0
+ENDSEC
+0
+EOF
+`;
+
+    await expect(buildFlightPlanFromDxfText(dxf, { dxfMode: 'offset' }))
+      .rejects
+      .toThrow('Não foi encontrada uma poligonal válida no DXF');
+  });
+
+  it('describes the configured buffer in the KML output', async () => {
+    const dxf = `0
+SECTION
+2
+ENTITIES
+0
+LWPOLYLINE
+8
+0
+90
+4
+70
+1
+10
+0
+20
+0
+10
+100
+20
+0
+10
+100
+20
+100
+10
+0
+20
+100
+0
+ENDSEC
+0
+EOF
+`;
+
+    const built = await buildFlightPlanFromDxfText(dxf, {
+      bufferMeters: 12,
+      utmZone: 24,
+      flightDate: new Date('2026-05-25T00:00:00Z'),
+      sourceFileName: 'buffer.dxf'
+    });
+
+    expect(built.kml).toContain('recuo de 12,00 m');
+    expect(built.kml).not.toContain('recuo de 7,00 m');
   });
 });
