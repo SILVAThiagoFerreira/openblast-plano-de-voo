@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { openblastLogoUrl, sampleDxfUrl } from './assets.js';
+import { enaexLogoWhiteUrl, sampleDxfUrl } from './assets.js';
 import { readBlobText, readUrlText } from './lib/file.js';
 import { buildFlightPlanFromDxfText, formatOutputName } from './lib/flight-plan.js';
 import {
@@ -245,12 +245,10 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="openblast-hubbar">
-        <div className="openblast-hubbar__brand">
-          <img src={openblastLogoUrl} alt="" />
-          <span>Open<strong>Blast</strong></span>
-        </div>
-        <span className="openblast-hubbar__title">Conversor DXF</span>
+      <header className="enaex-band">
+        <img className="enaex-band__logo" src={enaexLogoWhiteUrl} alt="Enaex Brasil" />
+        <span className="enaex-band__title">Conversor DXF</span>
+        <span className="enaex-band__unit">US Vale Verde</span>
       </header>
       <header className="hero">
         <div className="hero-copy">

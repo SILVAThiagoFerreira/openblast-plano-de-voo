@@ -63,47 +63,41 @@ button {
   padding: 0 28px 36px;
 }
 
-.openblast-hubbar {
+.enaex-band {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: 100vw;
-  min-height: 52px;
+  min-height: 50px;
   margin: 0 0 22px calc(50% - 50vw);
-  padding: 8px max(18px, calc((100vw - 1184px) / 2));
+  padding: 0 35px 0 45px;
   color: #ffffff;
-  background: var(--navy);
-  border-bottom: 3px solid var(--accent);
+  background: #3a434b;
+  border-bottom: 3px solid #e20613;
 }
 
-.openblast-hubbar__brand {
-  display: inline-flex;
-  align-items: center;
+.enaex-band__logo {
+  width: 90px;
+  height: auto;
   justify-self: start;
-  gap: 8px;
-  color: #ffffff;
-  font-size: 0.96rem;
-  font-weight: 600;
-  letter-spacing: -0.04em;
 }
 
-.openblast-hubbar__brand img {
-  width: 28px;
-  height: 34px;
-  object-fit: contain;
-  filter: brightness(0) invert(1);
-}
-
-.openblast-hubbar__brand strong {
-  color: #ff5860;
-}
-
-.openblast-hubbar__title {
+.enaex-band__title {
   justify-self: center;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.enaex-band__unit {
+  justify-self: end;
+  color: #c4c7cb;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .hero {
@@ -747,25 +741,24 @@ button {
     padding: 0 15px 28px;
   }
 
-  .openblast-hubbar {
-    grid-template-columns: 1fr auto;
+  .enaex-band {
+    grid-template-columns: auto 1fr;
     margin-bottom: 18px;
-    padding: 8px 15px;
+    padding: 0 16px;
   }
 
-  .openblast-hubbar__brand {
-    font-size: 0.88rem;
+  .enaex-band__logo {
+    width: 64px;
   }
 
-  .openblast-hubbar__brand img {
-    width: 25px;
-    height: 31px;
+  .enaex-band__title {
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
   }
 
-  .openblast-hubbar__title {
-    max-width: 155px;
-    font-size: 0.72rem;
-    text-align: right;
+  .enaex-band__unit {
+    display: none;
   }
 
   .hero {
