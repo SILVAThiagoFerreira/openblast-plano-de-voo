@@ -16,7 +16,7 @@
   --accent-soft: #fff0f1;
   --success: #16834a;
   --radius: 6px;
-  --shadow: 0 8px 24px rgba(35, 50, 62, 0.055);
+  --shadow: none;
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
 }
 
