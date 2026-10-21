@@ -205,6 +205,78 @@ function intersectsHull(from, to, hull, pts, tol) {
   return false;
 }
 
+/** Median distance from each point to its nearest other point. */
+export function medianNearestNeighbour(points) {
+  const pts = dedupeInput(points);
+  if (pts.length < 2) {
+    return 0;
+  }
+
+  const nearest = pts.map((point, i) => {
+    let best = Infinity;
+    for (let j = 0; j < pts.length; j += 1) {
+      if (j !== i) {
+        best = Math.min(best, Math.hypot(pts[j][0] - point[0], pts[j][1] - point[1]));
+      }
+    }
+    return best;
+  });
+
+  nearest.sort((a, b) => a - b);
+  return nearest[Math.floor(nearest.length / 2)];
+}
+
+function pointSegmentDistance(p, a, b) {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const lengthSq = dx * dx + dy * dy;
+  const t = lengthSq ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / lengthSq)) : 0;
+  return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+}
+
+// Chi-shape style digging: while a ring edge is longer than `threshold`, insert the
+// nearest hole that is not yet a vertex, if the ring stays simple and keeps every hole inside.
+const DIG_CANDIDATES = 10;
+const DIG_FACTOR = 1.5;
+
+function digRing(pts, ringIndices, tol, threshold) {
+  let ring = ringIndices.slice();
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+    const inRing = new Set(ring);
+
+    for (let i = 0; i < ring.length && !changed; i += 1) {
+      const a = pts[ring[i]];
+      const b = pts[ring[(i + 1) % ring.length]];
+      if (Math.hypot(b[0] - a[0], b[1] - a[1]) <= threshold) {
+        continue;
+      }
+
+      const candidates = [];
+      for (let j = 0; j < pts.length; j += 1) {
+        if (!inRing.has(j)) {
+          candidates.push({ index: j, distance: pointSegmentDistance(pts[j], a, b) });
+        }
+      }
+      candidates.sort((x, y) => x.distance - y.distance);
+
+      for (const { index } of candidates.slice(0, DIG_CANDIDATES)) {
+        const trial = [...ring.slice(0, i + 1), index, ...ring.slice(i + 1)];
+        const trialPts = trial.map((k) => pts[k]);
+        if (isSimpleRing(trialPts, tol) && pts.every((point) => pointInRingInclusive(point, trialPts, tol))) {
+          ring = trial;
+          changed = true;
+          break;
+        }
+      }
+    }
+  }
+
+  return ring;
+}
+
 /**
  * Concave hull of a point cloud.
  * @param {Array<[number, number]>} points input points (used as-is, never moved)
@@ -231,6 +303,9 @@ export function concaveHull(points, { maxK = 60 } = {}) {
   const diagonal = Math.hypot(maxX - minX, maxY - minY);
   const tol = 1e-10 * diagonal * diagonal;
 
+  // Edges longer than DIG_FACTOR x median spacing are dug. 1.6 leaves outer holes up to
+  // ~3 spacings from the line on the sample; 1.5 brings them to ~1.1 spacings.
+  const threshold = DIG_FACTOR * medianNearestNeighbour(pts);
   const kLimit = Math.min(maxK, n - 1);
   for (let k = 3; k <= kLimit; k += 1) {
     const indices = walkKnn(pts, k, tol);
@@ -238,13 +313,13 @@ export function concaveHull(points, { maxK = 60 } = {}) {
       continue;
     }
 
-    const ring = indices.map((index) => pts[index]);
-    if (!isSimpleRing(ring, tol)) {
+    const ringPts = indices.map((index) => pts[index]);
+    if (!isSimpleRing(ringPts, tol)) {
       continue;
     }
 
-    if (pts.every((point) => pointInRingInclusive(point, ring, tol))) {
-      return ring;
+    if (pts.every((point) => pointInRingInclusive(point, ringPts, tol))) {
+      return digRing(pts, indices, tol, threshold).map((index) => pts[index]);
     }
   }
 
