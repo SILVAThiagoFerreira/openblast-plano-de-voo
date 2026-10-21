@@ -696,6 +696,47 @@ button {
   padding: 7px 10px;
 }
 
+.contour-export {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px dashed var(--navy);
+  border-radius: var(--radius);
+  background: var(--surface-quiet);
+}
+
+.contour-export-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.contour-export-copy strong {
+  color: var(--ink);
+  font-size: 0.78rem;
+}
+
+.contour-export-copy span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.button-contour {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 10px;
+  color: #ffffff;
+  background: var(--navy);
+}
+
+.button-contour:hover:not(:disabled) {
+  background: var(--ink);
+}
+
 .export-note {
   margin: 11px 0 0;
   color: var(--muted-2);
@@ -797,8 +838,14 @@ button {
   }
 
   .sample-button,
-  .export-item .button {
+  .export-item .button,
+  .button-contour {
     width: 100%;
+  }
+
+  .contour-export {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .field-grid {

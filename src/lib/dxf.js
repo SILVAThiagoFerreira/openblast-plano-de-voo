@@ -158,12 +158,25 @@ export function parseDxfText(text) {
   const unitInfo = UNIT_SCALE_MAP[unitCode] ?? UNIT_SCALE_MAP[0];
 
   const allPoints = [];
+  const holeCenters = [];
   const closedPolygons = [];
   const counts = {};
 
   for (const entity of entities) {
     const type = String(entity.type ?? 'UNKNOWN').toUpperCase();
     counts[type] = (counts[type] ?? 0) + 1;
+
+    if (type === 'CIRCLE') {
+      const center = scalePoint(entity.center, unitInfo.scale);
+      if (center) {
+        holeCenters.push(center);
+      }
+    } else if (type === 'POINT' || type === 'INSERT') {
+      const position = scalePoint(entity.position ?? entity.point, unitInfo.scale);
+      if (position) {
+        holeCenters.push(position);
+      }
+    }
 
     const sampled = sampleEntity(entity, unitInfo.scale);
     if (sampled.points?.length) {
@@ -182,6 +195,7 @@ export function parseDxfText(text) {
     counts,
     unitInfo,
     points: dedupePoints(allPoints, 4),
+    holeCenters: dedupePoints(holeCenters, 4),
     closedPolygons
   };
 }

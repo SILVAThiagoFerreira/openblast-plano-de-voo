@@ -3,6 +3,7 @@ import { buildDxfDocument } from './dxf-export.js';
 import {
   bufferRing,
   buildBoundaryFromGeometry,
+  buildContourFromGeometry,
   formatAreaSmart,
   formatMeters,
   metersToHectares,
@@ -35,6 +36,8 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
   const parsed = parseDxfText(text);
   const sourceRing = buildBoundaryFromGeometry(parsed);
   const sourceAreaM2 = polygonArea(sourceRing);
+  const contourRing = buildContourFromGeometry(parsed);
+  const contourOutputRing = contourRing.length >= 3 ? contourRing : sourceRing;
   if (sourceRing.length < 3 || !Number.isFinite(sourceAreaM2) || sourceAreaM2 <= 0) {
     throw new Error('Não foi encontrada uma poligonal válida no DXF. Use pelo menos três pontos não colineares ou uma polilinha fechada.');
   }
@@ -79,11 +82,17 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
 
   const dxf = buildDxfDocument({
     name: flightName,
-    ring: dxfMode === 'offset' ? bufferedRing : sourceRing
+    ring: dxfMode === 'offset' ? bufferedRing : contourOutputRing
+  });
+
+  const contourDxf = buildDxfDocument({
+    name: flightName,
+    ring: contourOutputRing
   });
 
   const kmzBlob = await createKmzBlob(kml);
   const dxfBlob = new Blob([dxf], { type: 'application/dxf' });
+  const contourDxfBlob = new Blob([contourDxf], { type: 'application/dxf' });
 
   return {
     parsed,
@@ -94,8 +103,12 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
     kmzBlob,
     dxf,
     dxfBlob,
+    contourRing: contourOutputRing,
+    contourDxf,
+    contourDxfBlob,
     outputName,
     dxfOutputName,
+    contourDxfOutputName: `${formatOutputName(flightDate)} - contorno dos furos.dxf`,
     flightName,
     stats: {
       sourceAreaM2,

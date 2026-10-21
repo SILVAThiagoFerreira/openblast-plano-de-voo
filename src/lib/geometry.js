@@ -1,6 +1,7 @@
 import concaveman from 'concaveman';
 import ClipperLib from 'clipper-lib';
 import proj4 from 'proj4';
+import { concaveHull } from './concave-hull.js';
 
 const CLIPPER_SCALE = 1000;
 
@@ -257,6 +258,30 @@ export function buildBoundaryFromGeometry({ points = [], closedPolygons = [] } =
 
   if (normalizedHull.length >= 3) {
     return normalizedHull;
+  }
+
+  return convexHull(cloud);
+}
+
+// Contour for the hole-string DXF. Passes exactly through the outermost hole points
+// (no offset, no simplification). Closed polylines in the DXF take precedence.
+export function buildContourFromGeometry({ holeCenters = [], points = [], closedPolygons = [] } = {}) {
+  const normalizedClosed = closedPolygons
+    .map((ring) => normalizeRing(ring))
+    .filter((ring) => ring.length >= 3);
+
+  if (normalizedClosed.length) {
+    return chooseLargestRing(normalizedClosed);
+  }
+
+  const cloud = dedupePoints(holeCenters.length >= 3 ? holeCenters : points);
+  if (cloud.length < 3) {
+    return [];
+  }
+
+  const ring = normalizeRing(concaveHull(cloud));
+  if (ring.length >= 3) {
+    return ring;
   }
 
   return convexHull(cloud);

@@ -45,22 +45,27 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState('');
   const [dxfDownloadUrl, setDxfDownloadUrl] = useState('');
+  const [contourDownloadUrl, setContourDownloadUrl] = useState('');
 
   useEffect(() => {
-    if (!result?.kmzBlob || !result?.dxfBlob) {
+    if (!result?.kmzBlob || !result?.dxfBlob || !result?.contourDxfBlob) {
       setDownloadUrl('');
       setDxfDownloadUrl('');
+      setContourDownloadUrl('');
       return undefined;
     }
 
     const url = URL.createObjectURL(result.kmzBlob);
     const dxfUrl = URL.createObjectURL(result.dxfBlob);
+    const contourUrl = URL.createObjectURL(result.contourDxfBlob);
     setDownloadUrl(url);
     setDxfDownloadUrl(dxfUrl);
+    setContourDownloadUrl(contourUrl);
 
     return () => {
       URL.revokeObjectURL(url);
       URL.revokeObjectURL(dxfUrl);
+      URL.revokeObjectURL(contourUrl);
     };
   }, [result]);
 
@@ -126,6 +131,7 @@ function App() {
   const dxfOutputName = result?.dxfOutputName ?? `${formatOutputName(flightDate)} - ${dxfMode === 'offset' ? 'offset' : 'contorno'}.dxf`;
   const canDownload = Boolean(downloadUrl && result?.kmzBlob && !isProcessing);
   const canDownloadDxf = Boolean(dxfDownloadUrl && result?.dxfBlob && !isProcessing);
+  const canDownloadContour = Boolean(contourDownloadUrl && result?.contourDxfBlob && !isProcessing);
 
   async function handleFile(file) {
     if (!file) {
@@ -213,6 +219,17 @@ function App() {
     const anchor = document.createElement('a');
     anchor.href = dxfDownloadUrl;
     anchor.download = dxfOutputName;
+    anchor.click();
+  }
+
+  function handleDownloadContour() {
+    if (!canDownloadContour) {
+      return;
+    }
+
+    const anchor = document.createElement('a');
+    anchor.href = contourDownloadUrl;
+    anchor.download = result.contourDxfOutputName;
     anchor.click();
   }
 
@@ -464,6 +481,17 @@ function App() {
                         <span>Baixar</span>
                       </button>
                     </div>
+                  </div>
+
+                  <div className="contour-export">
+                    <div className="contour-export-copy">
+                      <strong>Exportar contorno dos furos (DXF)</strong>
+                      <span>Polígono fechado passando pelos furos das extremidades</span>
+                    </div>
+                    <button className="button button-contour" type="button" onClick={handleDownloadContour} disabled={!canDownloadContour} aria-label={'Baixar ' + result.contourDxfOutputName}>
+                      <DownloadGlyph />
+                      <span>Baixar contorno</span>
+                    </button>
                   </div>
 
                   <p className="export-note">KMZ com recuo · DXF {dxfMode === 'offset' ? 'com offset' : 'sem offset'}</p>
