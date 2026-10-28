@@ -277,7 +277,6 @@ function App() {
       </header>
       <header className="hero">
         <div className="hero-copy">
-          <p className="eyebrow">Limite de voo</p>
           <h1>Conversor Boreholes/DXF</h1>
           <p className="hero-subtitle">Gere contornos para o Google Earth.</p>
         </div>
