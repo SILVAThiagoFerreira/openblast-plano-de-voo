@@ -19,6 +19,14 @@ export function formatOutputName(value) {
   return `PLANO DE VOO - ${dateStamp(value)}`;
 }
 
+// Keep the source identification (for example PP190526_B) in every DXF name.
+export function formatDxfBaseName(sourceFileName) {
+  const source = String(sourceFileName ?? '').split(/[\\/]/).pop()
+    .replace(/\.dxf$/i, '').replace(/^holes(?:-string)?[-_ ]*/i, '')
+    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_').trim();
+  return `holes-string-${source || 'contorno'}`;
+}
+
 export async function buildFlightPlanFromDxfText(text, options = {}) {
   const {
     bufferMeters = 7,
@@ -51,8 +59,10 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
   const projectedRing = projectRingToWgs84(bufferedRing, utmZone);
 
   const outputName = `${formatOutputName(flightDate)}.kmz`;
-  const dxfSuffix = dxfMode === 'offset' ? 'offset' : 'contorno';
-  const dxfOutputName = `${formatOutputName(flightDate)} - ${dxfSuffix}.dxf`;
+  const dxfBaseName = formatDxfBaseName(sourceFileName);
+  const smoothDxfOutputName = `${dxfBaseName} - contorno suave.dxf`;
+  const offsetDxfOutputName = `${dxfBaseName} - contorno suave com offset.dxf`;
+  const dxfOutputName = dxfMode === 'offset' ? offsetDxfOutputName : smoothDxfOutputName;
   const flightName = formatOutputName(flightDate);
 
   const perimeterM = polygonPerimeter(bufferedRing);
@@ -80,10 +90,15 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
     }
   });
 
-  const dxf = buildDxfDocument({
+  const smoothDxf = buildDxfDocument({
     name: flightName,
-    ring: dxfMode === 'offset' ? bufferedRing : contourOutputRing
+    ring: sourceRing
   });
+  const offsetDxf = buildDxfDocument({
+    name: flightName,
+    ring: bufferedRing
+  });
+  const dxf = dxfMode === 'offset' ? offsetDxf : smoothDxf;
 
   const contourDxf = buildDxfDocument({
     name: flightName,
@@ -92,6 +107,8 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
 
   const kmzBlob = await createKmzBlob(kml);
   const dxfBlob = new Blob([dxf], { type: 'application/dxf' });
+  const smoothDxfBlob = new Blob([smoothDxf], { type: 'application/dxf' });
+  const offsetDxfBlob = new Blob([offsetDxf], { type: 'application/dxf' });
   const contourDxfBlob = new Blob([contourDxf], { type: 'application/dxf' });
 
   return {
@@ -103,12 +120,18 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
     kmzBlob,
     dxf,
     dxfBlob,
+    smoothDxf,
+    smoothDxfBlob,
+    smoothDxfOutputName,
+    offsetDxf,
+    offsetDxfBlob,
+    offsetDxfOutputName,
     contourRing: contourOutputRing,
     contourDxf,
     contourDxfBlob,
     outputName,
     dxfOutputName,
-    contourDxfOutputName: `${formatOutputName(flightDate)} - contorno dos furos.dxf`,
+    contourDxfOutputName: `${dxfBaseName} - contorno dos furos.dxf`,
     flightName,
     stats: {
       sourceAreaM2,

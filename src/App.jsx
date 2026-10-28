@@ -38,33 +38,37 @@ function App() {
   const [utmZone, setUtmZone] = useState(defaultZone);
   const [bufferMeters, setBufferMeters] = useState(7);
   const [flightDate, setFlightDate] = useState(todayIso);
-  const [dxfMode, setDxfMode] = useState('contour');
   const [status, setStatus] = useState('Aguardando DXF');
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState('');
-  const [dxfDownloadUrl, setDxfDownloadUrl] = useState('');
+  const [smoothDxfDownloadUrl, setSmoothDxfDownloadUrl] = useState('');
+  const [offsetDxfDownloadUrl, setOffsetDxfDownloadUrl] = useState('');
   const [contourDownloadUrl, setContourDownloadUrl] = useState('');
 
   useEffect(() => {
-    if (!result?.kmzBlob || !result?.dxfBlob || !result?.contourDxfBlob) {
+    if (!result?.kmzBlob || !result?.smoothDxfBlob || !result?.offsetDxfBlob || !result?.contourDxfBlob) {
       setDownloadUrl('');
-      setDxfDownloadUrl('');
+      setSmoothDxfDownloadUrl('');
+      setOffsetDxfDownloadUrl('');
       setContourDownloadUrl('');
       return undefined;
     }
 
     const url = URL.createObjectURL(result.kmzBlob);
-    const dxfUrl = URL.createObjectURL(result.dxfBlob);
+    const smoothDxfUrl = URL.createObjectURL(result.smoothDxfBlob);
+    const offsetDxfUrl = URL.createObjectURL(result.offsetDxfBlob);
     const contourUrl = URL.createObjectURL(result.contourDxfBlob);
     setDownloadUrl(url);
-    setDxfDownloadUrl(dxfUrl);
+    setSmoothDxfDownloadUrl(smoothDxfUrl);
+    setOffsetDxfDownloadUrl(offsetDxfUrl);
     setContourDownloadUrl(contourUrl);
 
     return () => {
       URL.revokeObjectURL(url);
-      URL.revokeObjectURL(dxfUrl);
+      URL.revokeObjectURL(smoothDxfUrl);
+      URL.revokeObjectURL(offsetDxfUrl);
       URL.revokeObjectURL(contourUrl);
     };
   }, [result]);
@@ -91,8 +95,7 @@ function App() {
           bufferMeters: getBufferMeters(bufferMeters),
           utmZone: Number(utmZone) || 24,
           flightDate,
-          sourceFileName: sourceName || 'DXF',
-          dxfMode
+          sourceFileName: sourceName || 'DXF'
         });
 
         if (cancelled) {
@@ -117,7 +120,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [bufferMeters, dxfMode, flightDate, sourceName, sourceRevision, sourceText, utmZone]);
+  }, [bufferMeters, flightDate, sourceName, sourceRevision, sourceText, utmZone]);
 
   const preview = useMemo(() => {
     if (!result?.sourceRing?.length || !result?.bufferedRing?.length) {
@@ -128,9 +131,9 @@ function App() {
   }, [result]);
 
   const outputName = result?.outputName ?? `${formatOutputName(flightDate)}.kmz`;
-  const dxfOutputName = result?.dxfOutputName ?? `${formatOutputName(flightDate)} - ${dxfMode === 'offset' ? 'offset' : 'contorno'}.dxf`;
   const canDownload = Boolean(downloadUrl && result?.kmzBlob && !isProcessing);
-  const canDownloadDxf = Boolean(dxfDownloadUrl && result?.dxfBlob && !isProcessing);
+  const canDownloadSmoothDxf = Boolean(smoothDxfDownloadUrl && result?.smoothDxfBlob && !isProcessing);
+  const canDownloadOffsetDxf = Boolean(offsetDxfDownloadUrl && result?.offsetDxfBlob && !isProcessing);
   const canDownloadContour = Boolean(contourDownloadUrl && result?.contourDxfBlob && !isProcessing);
 
   async function handleFile(file) {
@@ -211,14 +214,19 @@ function App() {
     anchor.click();
   }
 
-  function handleDownloadDxf() {
-    if (!canDownloadDxf) {
-      return;
-    }
-
+  function handleDownloadSmoothDxf() {
+    if (!canDownloadSmoothDxf) return;
     const anchor = document.createElement('a');
-    anchor.href = dxfDownloadUrl;
-    anchor.download = dxfOutputName;
+    anchor.href = smoothDxfDownloadUrl;
+    anchor.download = result.smoothDxfOutputName;
+    anchor.click();
+  }
+
+  function handleDownloadOffsetDxf() {
+    if (!canDownloadOffsetDxf) return;
+    const anchor = document.createElement('a');
+    anchor.href = offsetDxfDownloadUrl;
+    anchor.download = result.offsetDxfOutputName;
     anchor.click();
   }
 
@@ -363,13 +371,6 @@ function App() {
                   />
                 </label>
 
-                <label className="field">
-                  <span>DXF de saída</span>
-                  <select value={dxfMode} onChange={(event) => setDxfMode(event.target.value)}>
-                    <option value="contour">Contorno sem offset</option>
-                    <option value="offset">Contorno com offset</option>
-                  </select>
-                </label>
               </div>
               <p className="projection-note">{projectionLabel(utmZone)}</p>
             </div>
@@ -474,9 +475,19 @@ function App() {
                     <div className="export-item">
                       <div className="export-file">
                         <span className="file-badge file-badge-muted">DXF</span>
-                        <span className="file-name">{dxfOutputName}</span>
+                        <span className="file-name"><strong>Contorno suave sem offset</strong><br />{result.smoothDxfOutputName}</span>
                       </div>
-                      <button className="button button-secondary" type="button" onClick={handleDownloadDxf} disabled={!canDownloadDxf} aria-label={'Baixar ' + dxfOutputName}>
+                      <button className="button button-secondary" type="button" onClick={handleDownloadSmoothDxf} disabled={!canDownloadSmoothDxf} aria-label="Baixar contorno suave sem offset em DXF">
+                        <DownloadGlyph />
+                        <span>Baixar</span>
+                      </button>
+                    </div>
+                    <div className="export-item">
+                      <div className="export-file">
+                        <span className="file-badge file-badge-muted">DXF</span>
+                        <span className="file-name"><strong>Contorno suave com offset</strong><br />{result.offsetDxfOutputName}</span>
+                      </div>
+                      <button className="button button-secondary" type="button" onClick={handleDownloadOffsetDxf} disabled={!canDownloadOffsetDxf} aria-label="Baixar contorno suave com offset em DXF">
                         <DownloadGlyph />
                         <span>Baixar</span>
                       </button>
@@ -494,7 +505,7 @@ function App() {
                     </button>
                   </div>
 
-                  <p className="export-note">KMZ com recuo · DXF {dxfMode === 'offset' ? 'com offset' : 'sem offset'}</p>
+                  <p className="export-note">O offset usa o recuo lateral informado acima.</p>
                 </>
               ) : (
                 <div className="empty-state">Os arquivos aparecem após a importação.</div>

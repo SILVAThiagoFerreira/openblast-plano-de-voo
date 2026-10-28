@@ -158,4 +158,26 @@ describe('contour from hole centres', () => {
     const vertexCount = built.contourDxf.split('\n  0\nVERTEX\n').length - 1;
     expect(vertexCount).toBe(built.contourRing.length);
   });
+
+  it('exports both preview boundaries as separately named closed DXFs', async () => {
+    const path = join(process.cwd(), 'input', 'holes-PP190526_B.dxf');
+    const built = await buildFlightPlanFromDxfText(readFileSync(path, 'utf8'), {
+      bufferMeters: 7,
+      sourceFileName: 'holes-PP190526_B.dxf'
+    });
+
+    expect(built.smoothDxfOutputName).toBe('holes-string-PP190526_B - contorno suave.dxf');
+    expect(built.offsetDxfOutputName).toBe('holes-string-PP190526_B - contorno suave com offset.dxf');
+    expect(built.contourDxfOutputName).toMatch(/^holes-string-PP190526_B/);
+    const smoothRing = parseDxfText(built.smoothDxf).closedPolygons[0];
+    const offsetRing = parseDxfText(built.offsetDxf).closedPolygons[0];
+    for (const [actual, expected] of [[smoothRing, built.sourceRing], [offsetRing, built.bufferedRing]]) {
+      expect(actual).toHaveLength(expected.length);
+      actual.forEach((point, index) => {
+        expect(point[0]).toBeCloseTo(expected[index][0], 6);
+        expect(point[1]).toBeCloseTo(expected[index][1], 6);
+      });
+    }
+    expect(smoothRing).not.toEqual(built.contourRing);
+  });
 });
