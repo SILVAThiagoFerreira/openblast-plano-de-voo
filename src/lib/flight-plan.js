@@ -71,7 +71,8 @@ export async function buildFlightPlanFromDxfText(text, options = {}) {
     '<p>Poligonal gerada a partir de DXF com recuo de ' + formatMeters(configuredBufferMeters) + '.</p>',
     `<p><strong>Arquivo:</strong> ${sourceFileName}</p>`,
     `<p><strong>CRS:</strong> ${projectionLabel(utmZone)}</p>`,
-    `<p><strong>Unidade do DXF:</strong> ${parsed.unitInfo.label}</p>`,
+    `<p><strong>Unidade das coordenadas:</strong> ${parsed.unitInfo.label}</p>`,
+    `<p><strong>Unidade declarada no cabeçalho (não aplicada):</strong> ${parsed.declaredUnitInfo.label}</p>`,
     `<p><strong>Recuo:</strong> ${formatMeters(configuredBufferMeters)}</p>`
   ].join('');
 
