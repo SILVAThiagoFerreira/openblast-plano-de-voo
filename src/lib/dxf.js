@@ -11,6 +11,11 @@ const UNIT_SCALE_MAP = {
   6: { scale: 1, label: 'metros' }
 };
 
+// Coordinates are always used as-is: the app works in UTM metres (proj4 +units=m).
+// $INSUNITS only describes the drawing's declared unit and is reported, never applied,
+// because survey DXFs often carry a wrong unit header (e.g. feet on metre coordinates).
+const COORDINATE_UNIT = { scale: 1, label: 'metros (coordenadas UTM)' };
+
 function scalePoint(point, scale) {
   if (!point) {
     return null;
@@ -155,7 +160,8 @@ export function parseDxfText(text) {
   const parsed = parser.parseSync(text);
   const entities = Array.isArray(parsed.entities) ? parsed.entities : [];
   const unitCode = Number(parsed.header?.$INSUNITS ?? 0);
-  const unitInfo = UNIT_SCALE_MAP[unitCode] ?? UNIT_SCALE_MAP[0];
+  const declaredUnitInfo = UNIT_SCALE_MAP[unitCode] ?? UNIT_SCALE_MAP[0];
+  const unitInfo = COORDINATE_UNIT;
 
   const allPoints = [];
   const holeCenters = [];
@@ -194,6 +200,7 @@ export function parseDxfText(text) {
     entityCount: entities.length,
     counts,
     unitInfo,
+    declaredUnitInfo,
     points: dedupePoints(allPoints, 4),
     holeCenters: dedupePoints(holeCenters, 4),
     closedPolygons

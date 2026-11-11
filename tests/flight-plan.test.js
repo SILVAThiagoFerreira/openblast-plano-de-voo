@@ -346,3 +346,73 @@ EOF
     expect(built.kml).not.toContain('recuo de 7,00 m');
   });
 });
+
+describe('coordinate units', () => {
+  // Final.dxf real case: UTM metre coordinates, but the header declares feet ($INSUNITS = 2).
+  // The coordinates must be used as-is; the header must not rescale them.
+  const utmFeetHeaderDxf = `0
+SECTION
+2
+HEADER
+9
+$INSUNITS
+70
+2
+0
+ENDSEC
+0
+SECTION
+2
+ENTITIES
+0
+LWPOLYLINE
+8
+0
+90
+4
+70
+1
+10
+748768.5
+20
+8930379.2
+10
+748868.5
+20
+8930379.2
+10
+748868.5
+20
+8930479.2
+10
+748768.5
+20
+8930479.2
+0
+ENDSEC
+0
+EOF
+`;
+
+  it('reports the declared header unit without rescaling the coordinates', () => {
+    const parsed = parseDxfText(utmFeetHeaderDxf);
+    expect(parsed.declaredUnitInfo.label).toBe('pés');
+    expect(parsed.unitInfo.scale).toBe(1);
+    expect(parsed.points[0][0]).toBeCloseTo(748768.5, 3);
+    expect(parsed.points[0][1]).toBeCloseTo(8930379.2, 3);
+  });
+
+  it('keeps the UTM coordinates in the exported holes-string DXF', async () => {
+    const built = await buildFlightPlanFromDxfText(utmFeetHeaderDxf, {
+      bufferMeters: 0,
+      utmZone: 23,
+      flightDate: new Date('2026-05-25T00:00:00Z'),
+      sourceFileName: 'Final.dxf'
+    });
+
+    expect(built.contourDxf).toContain('748768.5');
+    expect(built.contourDxf).toContain('8930379.2');
+    expect(built.contourDxf).not.toContain('228');
+    expect(built.stats.sourceAreaM2).toBeCloseTo(10000, 0);
+  });
+});
